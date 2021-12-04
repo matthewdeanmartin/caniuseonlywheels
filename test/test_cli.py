@@ -13,14 +13,13 @@
 # limitations under the License.
 
 
-import caniuseonlywheels.__main__ as ciu_main
-from caniuseonlywheels import projects, pypi
-from caniuseonlywheels.test import mock, unittest, skip_pypi_timeouts
-
 import io
 import logging
 import tempfile
 
+import caniuseonlywheels.__main__ as ciu_main
+from caniuseonlywheels import projects, pypi
+from caniuseonlywheels.test import mock, skip_pypi_timeouts, unittest
 from caniuseonlywheels.test.custom_temp_file import CustomNamedTemporaryFile
 
 EXAMPLE_REQUIREMENTS = """
@@ -69,32 +68,31 @@ Requires-Dist: baz
 
 class CLITests(unittest.TestCase):
 
-    expected_requirements = frozenset(['foo-project', 'fizzy', 'pickything',
-                                       'hello'])
-    expected_extra_requirements = frozenset(['testing-stuff'])
-    expected_metadata = frozenset(['foo', 'bar-baz'])
-    expected_extra_metadata = frozenset(['baz'])
+    expected_requirements = frozenset(["foo-project", "fizzy", "pickything", "hello"])
+    expected_extra_requirements = frozenset(["testing-stuff"])
+    expected_metadata = frozenset(["foo", "bar-baz"])
+    expected_extra_metadata = frozenset(["baz"])
 
     def setUp(self):
-        log = logging.getLogger('ciu')
+        log = logging.getLogger("ciu")
         self._prev_log_level = log.getEffectiveLevel()
-        logging.getLogger('ciu').setLevel(1000)
+        logging.getLogger("ciu").setLevel(1000)
 
     def tearDown(self):
-        logging.getLogger('ciu').setLevel(self._prev_log_level)
+        logging.getLogger("ciu").setLevel(self._prev_log_level)
 
     def test_requirements(self):
-        with CustomNamedTemporaryFile('w') as file:
+        with CustomNamedTemporaryFile("w") as file:
             file.write(EXAMPLE_REQUIREMENTS)
             file.flush()
             got = projects.projects_from_requirements([file.name])
         self.assertEqual(set(got), self.expected_requirements)
 
     def test_multiple_requirements_files(self):
-        with CustomNamedTemporaryFile('w') as f1:
+        with CustomNamedTemporaryFile("w") as f1:
             f1.write(EXAMPLE_REQUIREMENTS)
             f1.flush()
-            with CustomNamedTemporaryFile('w') as f2:
+            with CustomNamedTemporaryFile("w") as f2:
                 f2.write(EXAMPLE_EXTRA_REQUIREMENTS)
                 f2.flush()
                 got = projects.projects_from_requirements([f1.name, f2.name])
@@ -106,143 +104,150 @@ class CLITests(unittest.TestCase):
         self.assertEqual(set(got), self.expected_metadata)
 
     def test_multiple_metadata(self):
-        got = projects.projects_from_metadata([EXAMPLE_METADATA,
-                                               EXAMPLE_EXTRA_METADATA])
+        got = projects.projects_from_metadata(
+            [EXAMPLE_METADATA, EXAMPLE_EXTRA_METADATA]
+        )
         want = self.expected_metadata.union(self.expected_extra_metadata)
         self.assertEqual(set(got), want)
 
     def test_cli_for_requirements(self):
-        with CustomNamedTemporaryFile('w') as file:
+        with CustomNamedTemporaryFile("w") as file:
             file.write(EXAMPLE_REQUIREMENTS)
             file.flush()
-            args = ['--requirements', file.name]
+            args = ["--requirements", file.name]
             parsed = ciu_main.arguments_from_cli(args)
             got = ciu_main.projects_from_parsed(parsed)
         self.assertEqual(set(got), self.expected_requirements)
 
     def test_excluding_requirements(self):
-        with CustomNamedTemporaryFile('w') as file:
+        with CustomNamedTemporaryFile("w") as file:
             file.write(EXAMPLE_REQUIREMENTS)
             file.flush()
-            args = ['--requirements', file.name, '--exclude', 'pickything']
+            args = ["--requirements", file.name, "--exclude", "pickything"]
             parsed = ciu_main.arguments_from_cli(args)
             got = ciu_main.projects_from_parsed(parsed)
         expected_requirements = set(self.expected_requirements)
-        expected_requirements.remove('pickything')
-        self.assertNotIn('pickything', set(got))
+        expected_requirements.remove("pickything")
+        self.assertNotIn("pickything", set(got))
         self.assertEqual(set(got), expected_requirements)
 
     def test_cli_for_metadata(self):
-        with CustomNamedTemporaryFile('w') as file:
+        with CustomNamedTemporaryFile("w") as file:
             file.write(EXAMPLE_METADATA)
             file.flush()
-            args = ['--metadata', file.name]
+            args = ["--metadata", file.name]
             parsed = ciu_main.arguments_from_cli(args)
             got = ciu_main.projects_from_parsed(parsed)
         self.assertEqual(set(got), self.expected_metadata)
 
     def test_cli_for_projects(self):
-        args = ['--projects', 'foo', 'bar.baz']
+        args = ["--projects", "foo", "bar.baz"]
         parsed = ciu_main.arguments_from_cli(args)
         got = ciu_main.projects_from_parsed(parsed)
-        self.assertEqual(set(got), frozenset(['foo', 'bar-baz']))
+        self.assertEqual(set(got), frozenset(["foo", "bar-baz"]))
 
     def test_cli_for_index(self):
-        args = ['--projects', 'foo', 'bar.baz',
-                '--index', 'some-url']
+        args = ["--projects", "foo", "bar.baz", "--index", "some-url"]
         parsed = ciu_main.arguments_from_cli(args)
-        self.assertEqual(parsed.index, 'some-url')
+        self.assertEqual(parsed.index, "some-url")
 
     def test_cli_for_index_default(self):
-        args = ['--projects', 'foo', 'bar.baz']
+        args = ["--projects", "foo", "bar.baz"]
         parsed = ciu_main.arguments_from_cli(args)
-        self.assertEqual(parsed.index, 'https://pypi.org/pypi')
+        self.assertEqual(parsed.index, "https://pypi.org/pypi")
 
     def test_message_plural(self):
-        blockers = [['A'], ['B']]
+        blockers = [["A"], ["B"]]
         messages = ciu_main.message(blockers)
         self.assertEqual(2, len(messages))
-        want = 'You need 2 projects to transition to wheels.'
+        want = "You need 2 projects to transition to wheels."
         self.assertEqual(messages[0], want)
-        want = ('Of those 2 projects, 2 have no direct dependencies blocking '
-                'their transition:')
+        want = (
+            "Of those 2 projects, 2 have no direct dependencies blocking "
+            "their transition:"
+        )
         self.assertEqual(messages[1], want)
 
     def test_message_singular(self):
-        blockers = [['A']]
+        blockers = [["A"]]
         messages = ciu_main.message(blockers)
         self.assertEqual(2, len(messages))
-        want = 'You need 1 project to transition to wheels.'
+        want = "You need 1 project to transition to wheels."
         self.assertEqual(messages[0], want)
-        want = ('Of that 1 project, 1 has no direct dependencies blocking '
-                'its transition:')
+        want = (
+            "Of that 1 project, 1 has no direct dependencies blocking "
+            "its transition:"
+        )
         self.assertEqual(messages[1], want)
 
-    @mock.patch('sys.stdout', autospec=True)
+    @mock.patch("sys.stdout", autospec=True)
     def test_message_no_blockers_flair_on_utf8_terminal(self, mock_stdout):
-        mock_stdout.encoding = 'UTF-8'
+        mock_stdout.encoding = "UTF-8"
         messages = ciu_main.message([])
-        expected = ['\U0001f389  You (potentially) have 0 projects blocking you from using wheels!']
+        expected = [
+            "\U0001f389  You (potentially) have 0 projects blocking you from using wheels!"
+        ]
         self.assertEqual(expected, messages)
 
-    @mock.patch('sys.stdout', autospec=True)
+    @mock.patch("sys.stdout", autospec=True)
     def test_message_no_blockers(self, mock_stdout):
         mock_stdout.encoding = None
         messages = ciu_main.message([])
-        expected = ['You (potentially) have 0 projects blocking you from using wheels!']
+        expected = ["You (potentially) have 0 projects blocking you from using wheels!"]
         self.assertEqual(expected, messages)
 
     def test_pprint_blockers(self):
-        simple = [['A']]
-        fancy = [['A', 'B']]
-        nutty = [['A', 'B', 'C']]
-        repeated = [['A', 'C'], ['B']]  # Also tests sorting.
+        simple = [["A"]]
+        fancy = [["A", "B"]]
+        nutty = [["A", "B", "C"]]
+        repeated = [["A", "C"], ["B"]]  # Also tests sorting.
         got = ciu_main.pprint_blockers(simple)
-        self.assertEqual(list(got), ['A'])
+        self.assertEqual(list(got), ["A"])
         got = ciu_main.pprint_blockers(fancy)
-        self.assertEqual(list(got), ['A (which is blocking B)'])
+        self.assertEqual(list(got), ["A (which is blocking B)"])
         got = ciu_main.pprint_blockers(nutty)
-        self.assertEqual(list(got),
-                         ['A (which is blocking B, which is blocking C)'])
+        self.assertEqual(list(got), ["A (which is blocking B, which is blocking C)"])
         got = ciu_main.pprint_blockers(repeated)
-        self.assertEqual(list(got), ['B', 'A (which is blocking C)'])
+        self.assertEqual(list(got), ["B", "A (which is blocking C)"])
 
-    @mock.patch('argparse.ArgumentParser.error')
+    @mock.patch("argparse.ArgumentParser.error")
     def test_projects_must_be_specified(self, parser_error):
         ciu_main.arguments_from_cli([])
         self.assertEqual(
             mock.call("Missing 'requirements', 'metadata', or 'projects'"),
-            parser_error.call_args)
+            parser_error.call_args,
+        )
 
     def test_verbose_output(self):
-        ciu_main.arguments_from_cli(['-v', '-p', 'ipython'])
-        self.assertTrue(logging.getLogger('ciu').isEnabledFor(logging.INFO))
+        ciu_main.arguments_from_cli(["-v", "-p", "ipython"])
+        self.assertTrue(logging.getLogger("ciu").isEnabledFor(logging.INFO))
 
-    @mock.patch('caniuseonlywheels.dependencies.blockers',
-                lambda projects, index_url: ['blocker'])
+    @mock.patch(
+        "caniuseonlywheels.dependencies.blockers",
+        lambda projects, index_url: ["blocker"],
+    )
     def test_nonzero_return_code(self):
-        args = ['--projects', 'foo', 'bar.baz']
+        args = ["--projects", "foo", "bar.baz"]
         with self.assertRaises(SystemExit) as context:
             ciu_main.main(args=args)
         self.assertNotEqual(context.exception.code, 0)
 
 
-#@unittest.skip('faster testing')
+# @unittest.skip('faster testing')
 class NetworkTests(unittest.TestCase):
-
     @skip_pypi_timeouts
-    @mock.patch('sys.stdout', io.StringIO())
+    @mock.patch("sys.stdout", io.StringIO())
     def test_e2e(self):
         # Make sure at least one project that will never be support wheels is included
-        args = '--projects', 'termcolor'
+        args = "--projects", "termcolor"
         ciu_main.main(args)
 
     @skip_pypi_timeouts
-    @mock.patch('sys.stdout', io.StringIO())
+    @mock.patch("sys.stdout", io.StringIO())
     def test_e2e_with_specified_index(self):
-        args = '--projects', 'paste', '--index', pypi.PYPI_INDEX_URL
+        args = "--projects", "paste", "--index", pypi.PYPI_INDEX_URL
         ciu_main.main(args)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

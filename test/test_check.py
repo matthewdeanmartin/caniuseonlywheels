@@ -13,14 +13,13 @@
 # limitations under the License.
 
 
-import caniuseonlywheels as ciu
-from caniuseonlywheels.test import unittest, skip_pypi_timeouts
-
 import tempfile
 
+import caniuseonlywheels as ciu
+from caniuseonlywheels.test import skip_pypi_timeouts, unittest
 from caniuseonlywheels.test.custom_temp_file import CustomNamedTemporaryFile
 
-wheelless_project = 'stackapi'  # https://pypi.org/project/PuLP/
+wheelless_project = "stackapi"  # https://pypi.org/project/PuLP/
 
 EXAMPLE_METADATA = """Metadata-Version: 1.2
 Name: TestingMetadata
@@ -31,7 +30,9 @@ Author: Brett Cannon
 Author-email: brett@python.org
 License: Apache
 Requires-Dist: {}
-""".format(wheelless_project)
+""".format(
+    wheelless_project
+)
 
 
 class CheckTest(unittest.TestCase):
@@ -41,7 +42,7 @@ class CheckTest(unittest.TestCase):
 
     @skip_pypi_timeouts
     def test_success(self):
-        self.assertTrue(ciu.check(projects=['scipy', 'numpy', 'ipython']))
+        self.assertTrue(ciu.check(projects=["scipy", "numpy", "ipython"]))
 
     @skip_pypi_timeouts
     def test_failure(self):
@@ -49,8 +50,8 @@ class CheckTest(unittest.TestCase):
 
     @skip_pypi_timeouts
     def test_requirements(self):
-        with CustomNamedTemporaryFile('w') as file:
-            file.write(wheelless_project + '\n')
+        with CustomNamedTemporaryFile("w") as file:
+            file.write(wheelless_project + "\n")
             file.flush()
             self.assertFalse(ciu.check(requirements_paths=[file.name]))
 
@@ -65,13 +66,15 @@ class CheckTest(unittest.TestCase):
 
     @skip_pypi_timeouts
     def test_case_insensitivity(self):
-        funky_name = (wheelless_project[:len(wheelless_project)].lower() +
-                      wheelless_project[len(wheelless_project):].upper())
+        funky_name = (
+            wheelless_project[: len(wheelless_project)].lower()
+            + wheelless_project[len(wheelless_project) :].upper()
+        )
         self.assertFalse(ciu.check(projects=[funky_name]))
 
     @skip_pypi_timeouts
     def test_ignore_missing_projects(self):
-        self.assertTrue(ciu.check(projects=['sdfsjdfsdlfk;jasdflkjasdfdfsdf']))
+        self.assertTrue(ciu.check(projects=["sdfsjdfsdlfk;jasdflkjasdfdfsdf"]))
 
     @skip_pypi_timeouts
     def test_manual_overrides(self):

@@ -13,40 +13,37 @@
 # limitations under the License.
 
 
+import packaging.utils
 
 from caniuseonlywheels import pypi
-from caniuseonlywheels.test import unittest, skip_pypi_timeouts
-
-import packaging.utils
+from caniuseonlywheels.test import skip_pypi_timeouts, unittest
 
 
 class NameTests(unittest.TestCase):
-
     def test_simple(self):
-        want = 'simple-name_with.everything-separator_known'
+        want = "simple-name_with.everything-separator_known"
         got = pypi.just_name(want)
         self.assertEqual(got, want)
 
     def test_requirements(self):
-        want = 'project.name'
-        got = pypi.just_name(want + '>=2.0.1')
+        want = "project.name"
+        got = pypi.just_name(want + ">=2.0.1")
         self.assertEqual(got, want)
 
     def test_bad_requirements(self):
         # From the OpenStack requirements file:
         # https://raw2.github.com/openstack/requirements/master/global-requirements.txt
-        want = 'warlock'
-        got = pypi.just_name(want + '>1.01<2')
+        want = "warlock"
+        got = pypi.just_name(want + ">1.01<2")
         self.assertEqual(got, want)
 
     def test_metadata(self):
-        want = 'foo'
+        want = "foo"
         got = pypi.just_name("foo; sys.platform == 'okook'")
         self.assertEqual(got, want)
 
 
 class OverridesTests(unittest.TestCase):
-
     @skip_pypi_timeouts
     def test_canonicalization(self):
         for name in pypi.manual_overrides():
@@ -60,7 +57,6 @@ class OverridesTests(unittest.TestCase):
 
 
 class NetworkTests(unittest.TestCase):
-
     @skip_pypi_timeouts
     def test_supports_wheels(self):
         self.assertTrue(pypi.supports_wheels("caniuseonlywheels"))

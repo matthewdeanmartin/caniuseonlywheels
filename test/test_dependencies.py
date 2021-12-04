@@ -13,26 +13,25 @@
 # limitations under the License.
 
 
-import setuptools  # To silence a warning.
-import distlib.locators
+import io
 
+import setuptools  # To silence a warning.
+
+import caniuseonlywheels.distlib.locators
 from caniuseonlywheels import dependencies, pypi
 from caniuseonlywheels.test import mock, unittest
 
-import io
-
 
 class GraphResolutionTests(unittest.TestCase):
-
     def test_circular_dependencies(self):
         reasons = {
-            'A': 'C',
-            'B': 'C',
-            'C': 'A',
+            "A": "C",
+            "B": "C",
+            "C": "A",
         }
-        self.assertRaises(dependencies.CircularDependencyError,
-                          dependencies.reasons_to_paths,
-                          reasons)
+        self.assertRaises(
+            dependencies.CircularDependencyError, dependencies.reasons_to_paths, reasons
+        )
 
     def test_all_projects_okay(self):
         # A, B, and C are fine on their own.
@@ -40,30 +39,32 @@ class GraphResolutionTests(unittest.TestCase):
 
     def test_leaf_okay(self):
         # A -> B where B is okay.
-        reasons = {'A': None}
-        self.assertEqual(frozenset([('A',)]),
-                         dependencies.reasons_to_paths(reasons))
+        reasons = {"A": None}
+        self.assertEqual(frozenset([("A",)]), dependencies.reasons_to_paths(reasons))
 
     def test_leaf_bad(self):
         # A -> B -> C where all projects are bad.
-        reasons = {'A': None, 'B': 'A', 'C': 'B'}
-        self.assertEqual(frozenset([('C', 'B', 'A')]),
-                         dependencies.reasons_to_paths(reasons))
+        reasons = {"A": None, "B": "A", "C": "B"}
+        self.assertEqual(
+            frozenset([("C", "B", "A")]), dependencies.reasons_to_paths(reasons)
+        )
 
 
 class DependenciesTests(unittest.TestCase):
-
-    @mock.patch('distlib.locators.locate')
+    @mock.patch("caniuseonlywheels.distlib.locators.locate")
     def test_normalization(self, locate_mock):
         class FakeLocated(object):
             def __init__(self, run_requires):
                 self.run_requires = run_requires
-        fake_deps = FakeLocated(['easy_thumbnail', 'stuff>=4.0.0'])
+
+        fake_deps = FakeLocated(["easy_thumbnail", "stuff>=4.0.0"])
         locate_mock.side_effect = lambda *args, **kargs: fake_deps
-        got = dependencies.dependencies('does not matter')
-        self.assertEqual({'easy-thumbnail', 'stuff'}, frozenset(got))
+        got = dependencies.dependencies("does not matter")
+        self.assertEqual({"easy-thumbnail", "stuff"}, frozenset(got))
+
 
 # XXX Tests covering dependency loops, e.g. a -> b, b -> a.
+
 
 class NetworkTests(unittest.TestCase):
 
@@ -77,23 +78,23 @@ class NetworkTests(unittest.TestCase):
     #         self.assertEqual(got, want)
 
     def test_dependencies(self):
-        got = dependencies.dependencies('pastescript')
+        got = dependencies.dependencies("pastescript")
         if got is None:
             self.skipTest("reaching distlib failed")
         else:
-            self.assertEqual(set(got), frozenset(['six', 'pastedeploy', 'paste']))
+            self.assertEqual(set(got), frozenset(["six", "pastedeploy", "paste"]))
 
     def test_dependencies_no_project(self):
-        got = dependencies.dependencies('sdflksjdfsadfsadfad')
+        got = dependencies.dependencies("sdflksjdfsadfsadfad")
         self.assertIsNone(got)
 
     def test_blockers_no_project(self):
-        got = dependencies.blockers(['asdfsadfdsfsdffdfadf'])
+        got = dependencies.blockers(["asdfsadfdsfsdffdfadf"])
         self.assertEqual(got, frozenset())
 
     def test_manual_overrides(self):
         self.assertEqual(dependencies.blockers(["unittest2"]), frozenset())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

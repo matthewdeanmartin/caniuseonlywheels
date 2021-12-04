@@ -13,7 +13,6 @@
 # limitations under the License.
 
 
-
 import datetime
 import json
 import logging
@@ -30,8 +29,8 @@ try:
 except NotImplementedError:  # pragma: no cover
     CPU_COUNT = 2
 
-PROJECT_NAME = re.compile(r'[\w.-]+')
-PYPI_INDEX_URL = 'https://pypi.org/pypi'
+PROJECT_NAME = re.compile(r"[\w.-]+")
+PYPI_INDEX_URL = "https://pypi.org/pypi"
 
 
 def just_name(supposed_name):
@@ -56,15 +55,15 @@ def _manual_overrides(_cache_date=None):
     An attempt is made to read the file as it currently stands on GitHub, and
     then only if that fails is the included file used.
     """
-    log = logging.getLogger('ciu')
+    log = logging.getLogger("ciu")
     request = requests.get("https://raw.githubusercontent.com/TODO/overrides.json")
     if request.status_code == 200:
         log.info("Overrides loaded from GitHub and cached")
         overrides = request.json()
     else:
         log.info("Overrides loaded from included package data and cached")
-        raw_bytes = pkgutil.get_data(__name__, 'overrides.json')
-        overrides = json.loads(raw_bytes.decode('utf-8'))
+        raw_bytes = pkgutil.get_data(__name__, "overrides.json")
+        overrides = json.loads(raw_bytes.decode("utf-8"))
     return frozenset(map(packaging.utils.canonicalize_name, overrides.keys()))
 
 
@@ -76,8 +75,11 @@ def supports_wheels(project_name, index_url=PYPI_INDEX_URL):
     request = requests.get(url)
     if request.status_code >= 400:
         log = logging.getLogger("ciu")
-        log.warning("problem fetching {}, assuming ported ({})".format(
-            project_name, request.status_code))
+        log.warning(
+            "problem fetching {}, assuming ported ({})".format(
+                project_name, request.status_code
+            )
+        )
         return True
     response = request.json()
     found1 = False
@@ -95,6 +97,6 @@ def supports_wheels(project_name, index_url=PYPI_INDEX_URL):
     return found1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     assert supports_wheels("jake")
     assert not supports_wheels("termcolor")

@@ -13,16 +13,15 @@
 # limitations under the License.
 
 
-
-import setuptools  # To silence a warning.
-import distlib.locators
-import packaging.utils
-
-import caniuseonlywheels as ciu
-from caniuseonlywheels import pypi
-
 import concurrent.futures
 import logging
+
+import packaging.utils
+import setuptools  # To silence a warning.
+
+import caniuseonlywheels as ciu
+import caniuseonlywheels.distlib.locators
+from caniuseonlywheels import pypi
 
 
 class CircularDependencyError(Exception):
@@ -43,9 +42,9 @@ def reasons_to_paths(reasons):
         parent = reasons[blocker]
         while parent:
             if parent in path:
-                raise CircularDependencyError(dict(parent=parent,
-                                                   blocker=blocker,
-                                                   path=path))
+                raise CircularDependencyError(
+                    dict(parent=parent, blocker=blocker, path=path)
+                )
             path.append(parent)
             parent = reasons.get(parent)
         paths.add(tuple(path))
@@ -54,18 +53,20 @@ def reasons_to_paths(reasons):
 
 def dependencies(project_name):
     """Get the dependencies for a project."""
-    log = logging.getLogger('ciu')
-    log.info('Locating dependencies for {}'.format(project_name))
-    located = distlib.locators.locate(project_name, prereleases=True)
+    log = logging.getLogger("ciu")
+    log.info("Locating dependencies for {}".format(project_name))
+    located = caniuseonlywheels.distlib.locators.locate(project_name, prereleases=True)
     if not located:
-        log.warning('{} not found; false-negatives possible'.format(project_name))
+        log.warning("{} not found; false-negatives possible".format(project_name))
         return None
-    return {packaging.utils.canonicalize_name(pypi.just_name(dep))
-            for dep in located.run_requires}
+    return {
+        packaging.utils.canonicalize_name(pypi.just_name(dep))
+        for dep in located.run_requires
+    }
 
 
 def blockers(project_names, index_url=pypi.PYPI_INDEX_URL):
-    log = logging.getLogger('ciu')
+    log = logging.getLogger("ciu")
     overrides = pypi.manual_overrides()
 
     def supports_wheels(project_name):
@@ -77,13 +78,14 @@ def blockers(project_names, index_url=pypi.PYPI_INDEX_URL):
     check = []
     evaluated = set(overrides)
     for project in project_names:
-        log.info('Checking top-level project: {} ...'.format(project))
+        log.info("Checking top-level project: {} ...".format(project))
         evaluated.add(project)
         if not supports_wheels(project):
             check.append(project)
     reasons = {project: None for project in check}
     thread_pool_executor = concurrent.futures.ThreadPoolExecutor(
-            max_workers=ciu.CPU_COUNT)
+        max_workers=ciu.CPU_COUNT
+    )
     with thread_pool_executor as executor:
         while len(check) > 0:
             new_check = []
@@ -94,16 +96,16 @@ def blockers(project_names, index_url=pypi.PYPI_INDEX_URL):
                     # can't port.
                     del reasons[parent]
                     continue
-                log.info('Dependencies of {}: {}'.format(project, deps))
+                log.info("Dependencies of {}: {}".format(project, deps))
                 unchecked_deps = []
                 for dep in deps:
                     if dep in evaluated:
-                        log.info('{} already checked'.format(dep))
+                        log.info("{} already checked".format(dep))
                     else:
                         unchecked_deps.append(dep)
-                deps_status = zip(unchecked_deps,
-                                  executor.map(supports_wheels,
-                                               unchecked_deps))
+                deps_status = zip(
+                    unchecked_deps, executor.map(supports_wheels, unchecked_deps)
+                )
                 for dep, ported in deps_status:
                     if not ported:
                         reasons[dep] = parent

@@ -15,16 +15,14 @@
 """Calculate whether the specified package(s) and their dependencies support Wheels."""
 
 
+import multiprocessing
 
 from caniuseonlywheels import projects as projects_
 from caniuseonlywheels import pypi
 
-import multiprocessing
-
-
 try:
     CPU_COUNT = max(2, multiprocessing.cpu_count())
-except NotImplementedError:  #pragma: no cover
+except NotImplementedError:  # pragma: no cover
     CPU_COUNT = 2
 
 

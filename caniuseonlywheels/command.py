@@ -13,9 +13,9 @@
 # limitations under the License.
 
 
+import sys
 
 import setuptools
-import sys
 
 import caniuseonlywheels as ciu
 import caniuseonlywheels.__main__ as ciu_main
@@ -30,13 +30,13 @@ class Command(setuptools.Command):
 
     def _dependencies(self):
         projects = []
-        for attr in ('install_requires', 'tests_require'):
+        for attr in ("install_requires", "tests_require"):
             requirements = getattr(self.distribution, attr, None) or []
             for project in requirements:
                 if not project:
                     continue
                 projects.append(pypi.just_name(project))
-        extras = getattr(self.distribution, 'extras_require', None) or {}
+        extras = getattr(self.distribution, "extras_require", None) or {}
         for value in extras.values():
             projects.extend(map(pypi.just_name, value))
         return projects

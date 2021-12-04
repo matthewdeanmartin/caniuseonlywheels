@@ -14,47 +14,52 @@
 
 from __future__ import print_function
 
-
-from caniuseonlywheels import dependencies
-from caniuseonlywheels import projects as projects_
-from caniuseonlywheels import pypi
-
-import packaging.utils
-
 import argparse
 import io
 import logging
 import sys
 
+import packaging.utils
+
+from caniuseonlywheels import dependencies
+from caniuseonlywheels import projects as projects_
+from caniuseonlywheels import pypi
+
 # Without this, the 'ciu' logger will emit nothing.
-logging.basicConfig(format='[%(levelname)s] %(message)s')
+logging.basicConfig(format="[%(levelname)s] %(message)s")
 
 
 def arguments_from_cli(args):
     """Parse and verify arguments through the CLI meet minimum requirements."""
-    description = ('Determine if a set of project dependencies will work with '
-                   'wheels')
+    description = "Determine if a set of project dependencies will work with " "wheels"
     parser = argparse.ArgumentParser(description=description)
-    req_help = 'path(s) to a pip requirements file (e.g. requirements.txt)'
-    parser.add_argument('--requirements', '-r', nargs='+', default=(),
-                        help=req_help)
-    meta_help = 'path(s) to a PEP 426 metadata file (e.g. PKG-INFO, pydist.json)'
-    parser.add_argument('--metadata', '-m', nargs='+', default=(),
-                        help=meta_help)
-    parser.add_argument('--projects', '-p', nargs='+', default=(),
-                        help='name(s) of projects to test for wheel support')
-    parser.add_argument('--verbose', '-v', action='store_true',
-                        help='verbose output (e.g. list compatibility overrides)')
-    parser.add_argument('--exclude', '-e', action='append', default=[],
-                        help='Ignore list')
-    index_help = 'index to to search for packages (e.g. https://pypi.org/pypi)'
-    parser.add_argument('--index', '-i', default=pypi.PYPI_INDEX_URL,
-                        help=index_help)
+    req_help = "path(s) to a pip requirements file (e.g. requirements.txt)"
+    parser.add_argument("--requirements", "-r", nargs="+", default=(), help=req_help)
+    meta_help = "path(s) to a PEP 426 metadata file (e.g. PKG-INFO, pydist.json)"
+    parser.add_argument("--metadata", "-m", nargs="+", default=(), help=meta_help)
+    parser.add_argument(
+        "--projects",
+        "-p",
+        nargs="+",
+        default=(),
+        help="name(s) of projects to test for wheel support",
+    )
+    parser.add_argument(
+        "--verbose",
+        "-v",
+        action="store_true",
+        help="verbose output (e.g. list compatibility overrides)",
+    )
+    parser.add_argument(
+        "--exclude", "-e", action="append", default=[], help="Ignore list"
+    )
+    index_help = "index to to search for packages (e.g. https://pypi.org/pypi)"
+    parser.add_argument("--index", "-i", default=pypi.PYPI_INDEX_URL, help=index_help)
     parsed = parser.parse_args(args)
     if not (parsed.requirements or parsed.metadata or parsed.projects):
         parser.error("Missing 'requirements', 'metadata', or 'projects'")
     if parsed.verbose:
-        logging.getLogger('ciu').setLevel(logging.INFO)
+        logging.getLogger("ciu").setLevel(logging.INFO)
 
     return parsed
 
@@ -77,32 +82,37 @@ def projects_from_parsed(parsed):
 def message(blockers):
     """Create a sequence of key messages based on what is blocking."""
     if not blockers:
-        encoding = getattr(sys.stdout, 'encoding', '')
+        encoding = getattr(sys.stdout, "encoding", "")
         if encoding:
             encoding = encoding.lower()
-        if encoding == 'utf-8':
+        if encoding == "utf-8":
             # party hat
             flair = "\U0001F389  "
         else:
-            flair = ''
-        return [flair +
-                'You (potentially) have 0 projects blocking you from using wheels!']
+            flair = ""
+        return [
+            flair + "You (potentially) have 0 projects blocking you from using wheels!"
+        ]
     flattened_blockers = set()
     for blocker_reasons in blockers:
         for blocker in blocker_reasons:
             flattened_blockers.add(blocker)
-    need = 'You need {0} project{1} to transition to wheels.'
-    formatted_need = need.format(len(flattened_blockers),
-                      's' if len(flattened_blockers) != 1 else '')
-    can_port = ('Of {0} {1} project{2}, {3} {4} no direct dependencies '
-                'blocking {5} transition:')
+    need = "You need {0} project{1} to transition to wheels."
+    formatted_need = need.format(
+        len(flattened_blockers), "s" if len(flattened_blockers) != 1 else ""
+    )
+    can_port = (
+        "Of {0} {1} project{2}, {3} {4} no direct dependencies "
+        "blocking {5} transition:"
+    )
     formatted_can_port = can_port.format(
-            'those' if len(flattened_blockers) != 1 else 'that',
-            len(flattened_blockers),
-            's' if len(flattened_blockers) != 1 else '',
-            len(blockers),
-            'have' if len(blockers) != 1 else 'has',
-            'their' if len(blockers) != 1 else 'its')
+        "those" if len(flattened_blockers) != 1 else "that",
+        len(flattened_blockers),
+        "s" if len(flattened_blockers) != 1 else "",
+        len(blockers),
+        "have" if len(blockers) != 1 else "has",
+        "their" if len(blockers) != 1 else "its",
+    )
     return formatted_need, formatted_can_port
 
 
@@ -119,27 +129,27 @@ def pprint_blockers(blockers):
     for blocker in sorted(blockers, key=lambda x: tuple(reversed(x))):
         buf = [blocker[0]]
         if len(blocker) > 1:
-            buf.append(' (which is blocking ')
-            buf.append(', which is blocking '.join(blocker[1:]))
-            buf.append(')')
-        pprinted.append(''.join(buf))
+            buf.append(" (which is blocking ")
+            buf.append(", which is blocking ".join(blocker[1:]))
+            buf.append(")")
+        pprinted.append("".join(buf))
     return pprinted
 
 
 def check(projects, index_url=pypi.PYPI_INDEX_URL):
     """Check the specified projects for wheel support."""
-    log = logging.getLogger('ciu')
-    log.info('{} top-level projects to check'.format(len(projects)))
-    print('Finding and checking dependencies ...')
+    log = logging.getLogger("ciu")
+    log.info("{} top-level projects to check".format(len(projects)))
+    print("Finding and checking dependencies ...")
     blockers = dependencies.blockers(projects, index_url)
 
-    print('')
+    print("")
     for line in message(blockers):
         print(line)
 
-    print('')
+    print("")
     for line in pprint_blockers(blockers):
-        print(' ', line)
+        print(" ", line)
 
     return len(blockers) == 0
 
@@ -148,8 +158,8 @@ def main(args=sys.argv[1:]):
     parsed = arguments_from_cli(args)
     passed = check(projects_from_parsed(parsed), parsed.index)
     if not passed:
-      sys.exit(3)
+        sys.exit(3)
 
 
-if __name__ == '__main__':  #pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     main()
