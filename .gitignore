@@ -31,3 +31,4 @@ pip-log.txt
 htmlcov
 .tox
 nosetests.xml
+.idea

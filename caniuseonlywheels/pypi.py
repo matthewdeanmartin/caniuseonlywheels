@@ -73,8 +73,7 @@ def supports_wheels(project_name, index_url=PYPI_INDEX_URL):
     log = logging.getLogger("ciu")
     log.info("Checking {} ...".format(project_name))
     url = "{}/{}/json".format(index_url, project_name)
-    log.info("Url {} ...".format(url))
-    request = requests.get(url, verify=False) # why that ssl cert fails? dunno
+    request = requests.get(url)
     if request.status_code >= 400:
         log = logging.getLogger("ciu")
         log.warning("problem fetching {}, assuming ported ({})".format(

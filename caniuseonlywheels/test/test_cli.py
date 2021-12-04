@@ -21,6 +21,7 @@ import io
 import logging
 import tempfile
 
+from caniuseonlywheels.test.custom_temp_file import CustomNamedTemporaryFile
 
 EXAMPLE_REQUIREMENTS = """
 # From
@@ -83,17 +84,17 @@ class CLITests(unittest.TestCase):
         logging.getLogger('ciu').setLevel(self._prev_log_level)
 
     def test_requirements(self):
-        with tempfile.NamedTemporaryFile('w') as file:
+        with CustomNamedTemporaryFile('w') as file:
             file.write(EXAMPLE_REQUIREMENTS)
             file.flush()
             got = projects.projects_from_requirements([file.name])
         self.assertEqual(set(got), self.expected_requirements)
 
     def test_multiple_requirements_files(self):
-        with tempfile.NamedTemporaryFile('w') as f1:
+        with CustomNamedTemporaryFile('w') as f1:
             f1.write(EXAMPLE_REQUIREMENTS)
             f1.flush()
-            with tempfile.NamedTemporaryFile('w') as f2:
+            with CustomNamedTemporaryFile('w') as f2:
                 f2.write(EXAMPLE_EXTRA_REQUIREMENTS)
                 f2.flush()
                 got = projects.projects_from_requirements([f1.name, f2.name])
@@ -111,7 +112,7 @@ class CLITests(unittest.TestCase):
         self.assertEqual(set(got), want)
 
     def test_cli_for_requirements(self):
-        with tempfile.NamedTemporaryFile('w') as file:
+        with CustomNamedTemporaryFile('w') as file:
             file.write(EXAMPLE_REQUIREMENTS)
             file.flush()
             args = ['--requirements', file.name]
@@ -120,7 +121,7 @@ class CLITests(unittest.TestCase):
         self.assertEqual(set(got), self.expected_requirements)
 
     def test_excluding_requirements(self):
-        with tempfile.NamedTemporaryFile('w') as file:
+        with CustomNamedTemporaryFile('w') as file:
             file.write(EXAMPLE_REQUIREMENTS)
             file.flush()
             args = ['--requirements', file.name, '--exclude', 'pickything']
@@ -132,7 +133,7 @@ class CLITests(unittest.TestCase):
         self.assertEqual(set(got), expected_requirements)
 
     def test_cli_for_metadata(self):
-        with tempfile.NamedTemporaryFile('w') as file:
+        with CustomNamedTemporaryFile('w') as file:
             file.write(EXAMPLE_METADATA)
             file.flush()
             args = ['--metadata', file.name]

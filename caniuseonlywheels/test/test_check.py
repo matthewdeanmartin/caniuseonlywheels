@@ -18,7 +18,9 @@ from caniuseonlywheels.test import unittest, skip_pypi_timeouts
 
 import tempfile
 
-py2_project = 'pulp'  # https://pypi.org/project/PuLP/
+from caniuseonlywheels.test.custom_temp_file import CustomNamedTemporaryFile
+
+wheelless_project = 'stackapi'  # https://pypi.org/project/PuLP/
 
 EXAMPLE_METADATA = """Metadata-Version: 1.2
 Name: TestingMetadata
@@ -29,7 +31,7 @@ Author: Brett Cannon
 Author-email: brett@python.org
 License: Apache
 Requires-Dist: {}
-""".format(py2_project)
+""".format(wheelless_project)
 
 
 class CheckTest(unittest.TestCase):
@@ -43,12 +45,12 @@ class CheckTest(unittest.TestCase):
 
     @skip_pypi_timeouts
     def test_failure(self):
-        self.assertFalse(ciu.check(projects=[py2_project]))
+        self.assertFalse(ciu.check(projects=[wheelless_project]))
 
     @skip_pypi_timeouts
     def test_requirements(self):
-        with tempfile.NamedTemporaryFile('w') as file:
-            file.write(py2_project+'\n')
+        with CustomNamedTemporaryFile('w') as file:
+            file.write(wheelless_project + '\n')
             file.flush()
             self.assertFalse(ciu.check(requirements_paths=[file.name]))
 
@@ -63,8 +65,8 @@ class CheckTest(unittest.TestCase):
 
     @skip_pypi_timeouts
     def test_case_insensitivity(self):
-        funky_name = (py2_project[:len(py2_project)].lower() +
-                      py2_project[len(py2_project):].upper())
+        funky_name = (wheelless_project[:len(wheelless_project)].lower() +
+                      wheelless_project[len(wheelless_project):].upper())
         self.assertFalse(ciu.check(projects=[funky_name]))
 
     @skip_pypi_timeouts

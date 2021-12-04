@@ -55,8 +55,8 @@ class OverridesTests(unittest.TestCase):
     @skip_pypi_timeouts
     def test_success(self):
         overrides = pypi.manual_overrides()
-        self.assertTrue(len(overrides) > 10)
-        self.assertIn("unittest2", overrides)
+        self.assertTrue(len(overrides) >= 1)
+        self.assertIn("termcolor", overrides)
 
 
 class NetworkTests(unittest.TestCase):
