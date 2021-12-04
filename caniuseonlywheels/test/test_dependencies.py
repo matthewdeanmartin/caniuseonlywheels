@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
+
 import setuptools  # To silence a warning.
 import distlib.locators
 
-from caniusepython3 import dependencies, pypi
-from caniusepython3.test import mock, unittest
+from caniuseonlywheels import dependencies, pypi
+from caniuseonlywheels.test import mock, unittest
 
 import io
 

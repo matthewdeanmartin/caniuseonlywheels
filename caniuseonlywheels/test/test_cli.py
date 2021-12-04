@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
 
-import caniusepython3.__main__ as ciu_main
-from caniusepython3 import projects, pypi
-from caniusepython3.test import mock, unittest, skip_pypi_timeouts
+import caniuseonlywheels.__main__ as ciu_main
+from caniuseonlywheels import projects, pypi
+from caniuseonlywheels.test import mock, unittest, skip_pypi_timeouts
 
 import io
 import logging
@@ -32,8 +31,8 @@ Foo.Project \
 Fizzy [foo, bar]
 PickyThing<1.6,>1.9,!=1.9.6,<2.0a0,==2.4c1
 Hello
--e git+https://github.com/brettcannon/caniusepython3#egg=caniusepython3
-file:../caniusepython3#egg=caniusepython3
+-e git+https://github.com/brettcannon/caniuseonlywheels#egg=caniuseonlywheels
+file:../caniuseonlywheels#egg=caniuseonlywheels
 # Docs say to specify an #egg argument, but apparently it's optional.
 file:../../lib/project
 """
@@ -162,7 +161,7 @@ class CLITests(unittest.TestCase):
         blockers = [['A'], ['B']]
         messages = ciu_main.message(blockers)
         self.assertEqual(2, len(messages))
-        want = 'You need 2 projects to transition to Python 3.'
+        want = 'You need 2 projects to transition to wheels.'
         self.assertEqual(messages[0], want)
         want = ('Of those 2 projects, 2 have no direct dependencies blocking '
                 'their transition:')
@@ -172,7 +171,7 @@ class CLITests(unittest.TestCase):
         blockers = [['A']]
         messages = ciu_main.message(blockers)
         self.assertEqual(2, len(messages))
-        want = 'You need 1 project to transition to Python 3.'
+        want = 'You need 1 project to transition to wheels.'
         self.assertEqual(messages[0], want)
         want = ('Of that 1 project, 1 has no direct dependencies blocking '
                 'its transition:')
@@ -182,14 +181,14 @@ class CLITests(unittest.TestCase):
     def test_message_no_blockers_flair_on_utf8_terminal(self, mock_stdout):
         mock_stdout.encoding = 'UTF-8'
         messages = ciu_main.message([])
-        expected = ['\U0001f389  You (potentially) have 0 projects blocking you from using Python 3!']
+        expected = ['\U0001f389  You (potentially) have 0 projects blocking you from using wheels!']
         self.assertEqual(expected, messages)
 
     @mock.patch('sys.stdout', autospec=True)
     def test_message_no_blockers(self, mock_stdout):
         mock_stdout.encoding = None
         messages = ciu_main.message([])
-        expected = ['You (potentially) have 0 projects blocking you from using Python 3!']
+        expected = ['You (potentially) have 0 projects blocking you from using wheels!']
         self.assertEqual(expected, messages)
 
     def test_pprint_blockers(self):
@@ -218,7 +217,7 @@ class CLITests(unittest.TestCase):
         ciu_main.arguments_from_cli(['-v', '-p', 'ipython'])
         self.assertTrue(logging.getLogger('ciu').isEnabledFor(logging.INFO))
 
-    @mock.patch('caniusepython3.dependencies.blockers',
+    @mock.patch('caniuseonlywheels.dependencies.blockers',
                 lambda projects, index_url: ['blocker'])
     def test_nonzero_return_code(self):
         args = ['--projects', 'foo', 'bar.baz']
@@ -233,9 +232,8 @@ class NetworkTests(unittest.TestCase):
     @skip_pypi_timeouts
     @mock.patch('sys.stdout', io.StringIO())
     def test_e2e(self):
-        # Make sure at least one project that will never be in Python 3 is
-        # included.
-        args = '--projects', 'numpy', 'scipy', 'matplotlib', 'ipython', 'paste'
+        # Make sure at least one project that will never be support wheels is included
+        args = '--projects', 'termcolor'
         ciu_main.main(args)
 
     @skip_pypi_timeouts

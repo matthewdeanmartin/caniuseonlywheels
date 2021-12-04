@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Calculate whether the specified package(s) and their dependencies support Python 3."""
+"""Calculate whether the specified package(s) and their dependencies support Wheels."""
 
-from __future__ import unicode_literals
 
-from caniusepython3 import projects as projects_
-from caniusepython3 import pypi
+
+from caniuseonlywheels import projects as projects_
+from caniuseonlywheels import pypi
 
 import multiprocessing
 
@@ -29,7 +29,7 @@ except NotImplementedError:  #pragma: no cover
 
 
 def check(requirements_paths=[], metadata=[], projects=[]):
-    """Return True if all of the specified dependencies have been ported to Python 3.
+    """Return True if all of the specified dependencies support wheels.
 
     The requirements_paths argument takes a sequence of file paths to
     requirements files. The 'metadata' argument takes a sequence of strings
@@ -48,6 +48,6 @@ def check(requirements_paths=[], metadata=[], projects=[]):
     for dependency in dependencies:
         if dependency in manual_overrides:
             continue
-        elif not pypi.supports_py3(dependency):
+        elif not pypi.supports_wheels(dependency):
             return False
     return True

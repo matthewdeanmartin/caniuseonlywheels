@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
-
-from caniusepython3 import command
-from caniusepython3.test import unittest, skip_pypi_timeouts, mock
+from caniuseonlywheels import command
+from caniuseonlywheels.test import unittest, skip_pypi_timeouts, mock
 
 import setuptools  # To suppress a warning.
 from distutils import dist
@@ -43,7 +41,7 @@ class RequiresTests(unittest.TestCase):
         got = frozenset(cmd._dependencies())
         self.assertEqual(got, frozenset(['pip']))
 
-    @mock.patch('caniusepython3.dependencies.blockers',
+    @mock.patch('caniuseonlywheels.dependencies.blockers',
                 lambda projects, index_url: ['blocker'])
     def test_nonzero_return_code(self):
         cmd = make_command({'install_requires': ['pip']})

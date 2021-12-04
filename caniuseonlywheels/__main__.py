@@ -13,11 +13,11 @@
 # limitations under the License.
 
 from __future__ import print_function
-from __future__ import unicode_literals
 
-from caniusepython3 import dependencies
-from caniusepython3 import projects as projects_
-from caniusepython3 import pypi
+
+from caniuseonlywheels import dependencies
+from caniuseonlywheels import projects as projects_
+from caniuseonlywheels import pypi
 
 import packaging.utils
 
@@ -33,7 +33,7 @@ logging.basicConfig(format='[%(levelname)s] %(message)s')
 def arguments_from_cli(args):
     """Parse and verify arguments through the CLI meet minimum requirements."""
     description = ('Determine if a set of project dependencies will work with '
-                   'Python 3')
+                   'wheels')
     parser = argparse.ArgumentParser(description=description)
     req_help = 'path(s) to a pip requirements file (e.g. requirements.txt)'
     parser.add_argument('--requirements', '-r', nargs='+', default=(),
@@ -42,7 +42,7 @@ def arguments_from_cli(args):
     parser.add_argument('--metadata', '-m', nargs='+', default=(),
                         help=meta_help)
     parser.add_argument('--projects', '-p', nargs='+', default=(),
-                        help='name(s) of projects to test for Python 3 support')
+                        help='name(s) of projects to test for wheel support')
     parser.add_argument('--verbose', '-v', action='store_true',
                         help='verbose output (e.g. list compatibility overrides)')
     parser.add_argument('--exclude', '-e', action='append', default=[],
@@ -86,12 +86,12 @@ def message(blockers):
         else:
             flair = ''
         return [flair +
-                'You (potentially) have 0 projects blocking you from using Python 3!']
+                'You (potentially) have 0 projects blocking you from using wheels!']
     flattened_blockers = set()
     for blocker_reasons in blockers:
         for blocker in blocker_reasons:
             flattened_blockers.add(blocker)
-    need = 'You need {0} project{1} to transition to Python 3.'
+    need = 'You need {0} project{1} to transition to wheels.'
     formatted_need = need.format(len(flattened_blockers),
                       's' if len(flattened_blockers) != 1 else '')
     can_port = ('Of {0} {1} project{2}, {3} {4} no direct dependencies '
@@ -127,9 +127,9 @@ def pprint_blockers(blockers):
 
 
 def check(projects, index_url=pypi.PYPI_INDEX_URL):
-    """Check the specified projects for Python 3 compatibility."""
+    """Check the specified projects for wheel support."""
     log = logging.getLogger('ciu')
-    log.info('{0} top-level projects to check'.format(len(projects)))
+    log.info('{} top-level projects to check'.format(len(projects)))
     print('Finding and checking dependencies ...')
     blockers = dependencies.blockers(projects, index_url)
 

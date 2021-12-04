@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
 
-import packaging.utils
-import requests
 
 import datetime
 import json
@@ -23,17 +20,14 @@ import logging
 import multiprocessing
 import pkgutil
 import re
+from functools import lru_cache
 
-try:
-    from functools import lru_cache
-except ImportError:
-    from backports.functools_lru_cache import lru_cache
-
-
+import packaging.utils
+import requests
 
 try:
     CPU_COUNT = max(2, multiprocessing.cpu_count())
-except NotImplementedError:  #pragma: no cover
+except NotImplementedError:  # pragma: no cover
     CPU_COUNT = 2
 
 PROJECT_NAME = re.compile(r'[\w.-]+')
@@ -63,8 +57,7 @@ def _manual_overrides(_cache_date=None):
     then only if that fails is the included file used.
     """
     log = logging.getLogger('ciu')
-    request = requests.get("https://raw.githubusercontent.com/brettcannon/"
-                           "caniusepython3/master/caniusepython3/overrides.json")
+    request = requests.get("https://raw.githubusercontent.com/TODO/overrides.json")
     if request.status_code == 200:
         log.info("Overrides loaded from GitHub and cached")
         overrides = request.json()
@@ -75,16 +68,34 @@ def _manual_overrides(_cache_date=None):
     return frozenset(map(packaging.utils.canonicalize_name, overrides.keys()))
 
 
-def supports_py3(project_name, index_url=PYPI_INDEX_URL):
-    """Check with PyPI if a project supports Python 3."""
+def supports_wheels(project_name, index_url=PYPI_INDEX_URL):
+    """Check with PyPI if a project supports wheels."""
     log = logging.getLogger("ciu")
     log.info("Checking {} ...".format(project_name))
-    request = requests.get("{}/{}/json".format(index_url, project_name))
+    url = "{}/{}/json".format(index_url, project_name)
+    log.info("Url {} ...".format(url))
+    request = requests.get(url, verify=False) # why that ssl cert fails? dunno
     if request.status_code >= 400:
         log = logging.getLogger("ciu")
         log.warning("problem fetching {}, assuming ported ({})".format(
-                        project_name, request.status_code))
+            project_name, request.status_code))
         return True
     response = request.json()
-    return any(c.startswith("Programming Language :: Python :: 3")
-               for c in response["info"]["classifiers"])
+    found1 = False
+
+    # is there at least 1 wheel? Maybe support scenario
+    # of checking if most recent has wheel, too.
+    for version, release in response["releases"].items():
+        for file_info in release:
+            if file_info["filename"].endswith(".whl"):
+                found1 = True
+                break
+        if found1:
+            break
+
+    return found1
+
+
+if __name__ == '__main__':
+    assert supports_wheels("jake")
+    assert not supports_wheels("termcolor")

@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
 
-import caniusepython3 as ciu
-from caniusepython3.test import unittest, skip_pypi_timeouts
+import caniuseonlywheels as ciu
+from caniuseonlywheels.test import unittest, skip_pypi_timeouts
 
 import tempfile
 
@@ -25,11 +24,11 @@ EXAMPLE_METADATA = """Metadata-Version: 1.2
 Name: TestingMetadata
 Version: 0.5
 Summary: testing
-Home-page: http://github.com/brettcannon/caniusepython3
+Home-page: http://github.com/brettcannon/caniuseonlywheels
 Author: Brett Cannon
 Author-email: brett@python.org
 License: Apache
-Requires-Dist: {0}
+Requires-Dist: {}
 """.format(py2_project)
 
 

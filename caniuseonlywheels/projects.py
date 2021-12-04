@@ -1,7 +1,4 @@
-from __future__ import print_function
-from __future__ import unicode_literals
-
-from caniusepython3 import pypi
+from caniuseonlywheels import pypi
 
 import setuptools  # To silenace a warning.
 import distlib.metadata
@@ -31,14 +28,14 @@ def projects_from_requirements(requirements):
             try:
                 reqs.append(packaging.requirements.Requirement(line))
             except packaging.requirements.InvalidRequirement:
-                log.warning('Skipping {0!r}: could not parse requirement'.format(line))
+                log.warning('Skipping {!r}: could not parse requirement'.format(line))
         for req in reqs:
             if not req.name:
                 log.warning('A requirement lacks a name '
                             '(e.g. no `#egg` on a `file:` path)')
             elif req.url:
                 log.warning(
-                    'Skipping {0}: URL-specified projects unsupported'.format(req.name))
+                    'Skipping {}: URL-specified projects unsupported'.format(req.name))
             else:
                 valid_reqs.append(req.name)
     return frozenset(map(packaging.utils.canonicalize_name, valid_reqs))

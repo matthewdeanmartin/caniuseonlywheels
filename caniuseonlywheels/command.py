@@ -12,19 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
+
 
 import setuptools
 import sys
 
-import caniusepython3 as ciu
-import caniusepython3.__main__ as ciu_main
-from caniusepython3 import pypi
+import caniuseonlywheels as ciu
+import caniuseonlywheels.__main__ as ciu_main
+from caniuseonlywheels import pypi
 
 
 class Command(setuptools.Command):
 
-    description = """Run caniusepython3 over a setup.py file."""
+    description = """Run caniuseonlywheels over a setup.py file."""
 
     user_options = []
 

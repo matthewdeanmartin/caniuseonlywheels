@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
 
-from caniusepython3 import pypi
-from caniusepython3.test import unittest, skip_pypi_timeouts
+
+from caniuseonlywheels import pypi
+from caniuseonlywheels.test import unittest, skip_pypi_timeouts
 
 import packaging.utils
 
@@ -62,8 +62,8 @@ class OverridesTests(unittest.TestCase):
 class NetworkTests(unittest.TestCase):
 
     @skip_pypi_timeouts
-    def test_supports_py3(self):
-        self.assertTrue(pypi.supports_py3("caniusepython3"))
-        self.assertFalse(pypi.supports_py3("pil"))
+    def test_supports_wheels(self):
+        self.assertTrue(pypi.supports_wheels("caniuseonlywheels"))
+        self.assertFalse(pypi.supports_wheels("pil"))
         # Unfound projects are considered ported.
-        self.assertTrue(pypi.supports_py3("sdfffavsafasvvavfdvavfavf"))
+        self.assertTrue(pypi.supports_wheels("sdfffavsafasvvavfdvavfavf"))

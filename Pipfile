@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+packaging = "*"
+# distlib ="*"
+setuptools= "*"
+#backports.functools_lru_cache="*"
+requests="*"
+
+
+[dev-packages]
+pyupgrade = "*"
+
+[requires]
+python_version = "3.9"

@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
+
 
 import setuptools  # To silence a warning.
 import distlib.locators
 import packaging.utils
 
-import caniusepython3 as ciu
-from caniusepython3 import pypi
+import caniuseonlywheels as ciu
+from caniuseonlywheels import pypi
 
 import concurrent.futures
 import logging
@@ -58,7 +58,7 @@ def dependencies(project_name):
     log.info('Locating dependencies for {}'.format(project_name))
     located = distlib.locators.locate(project_name, prereleases=True)
     if not located:
-        log.warning('{0} not found; false-negatives possible'.format(project_name))
+        log.warning('{} not found; false-negatives possible'.format(project_name))
         return None
     return {packaging.utils.canonicalize_name(pypi.just_name(dep))
             for dep in located.run_requires}
@@ -68,18 +68,18 @@ def blockers(project_names, index_url=pypi.PYPI_INDEX_URL):
     log = logging.getLogger('ciu')
     overrides = pypi.manual_overrides()
 
-    def supports_py3(project_name):
+    def supports_wheels(project_name):
         if project_name in overrides:
             return True
         else:
-            return pypi.supports_py3(project_name, index_url=index_url)
+            return pypi.supports_wheels(project_name, index_url=index_url)
 
     check = []
     evaluated = set(overrides)
     for project in project_names:
-        log.info('Checking top-level project: {0} ...'.format(project))
+        log.info('Checking top-level project: {} ...'.format(project))
         evaluated.add(project)
-        if not supports_py3(project):
+        if not supports_wheels(project):
             check.append(project)
     reasons = {project: None for project in check}
     thread_pool_executor = concurrent.futures.ThreadPoolExecutor(
@@ -94,15 +94,15 @@ def blockers(project_names, index_url=pypi.PYPI_INDEX_URL):
                     # can't port.
                     del reasons[parent]
                     continue
-                log.info('Dependencies of {0}: {1}'.format(project, deps))
+                log.info('Dependencies of {}: {}'.format(project, deps))
                 unchecked_deps = []
                 for dep in deps:
                     if dep in evaluated:
-                        log.info('{0} already checked'.format(dep))
+                        log.info('{} already checked'.format(dep))
                     else:
                         unchecked_deps.append(dep)
                 deps_status = zip(unchecked_deps,
-                                  executor.map(supports_py3,
+                                  executor.map(supports_wheels,
                                                unchecked_deps))
                 for dep, ported in deps_status:
                     if not ported:
