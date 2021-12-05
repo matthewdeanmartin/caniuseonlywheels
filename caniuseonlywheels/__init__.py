@@ -45,6 +45,8 @@ def check(requirements_paths=[], metadata=[], projects=[]):
 
     for dependency in dependencies:
         if dependency in manual_overrides:
+            print(f"You will need to replace {dependency} "
+                  f"with {manual_overrides[dependency]}")
             continue
         elif not pypi.supports_wheels(dependency):
             return False

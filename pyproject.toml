@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "caniuseonlywheels"
-version = "1.0.3"
+version = "1.0.5"
 description = "Can I switch to installing only using wheels and never sdist?"
 authors = ["Matthew Martin <matthewdeanmartin@gmail.com>"]
 keywords = ["supply-chain", "wheels"]
@@ -22,6 +22,8 @@ classifiers = [
 ]
 include = [
     "caniuseonlywheels/**/*.py",
+    "caniuseonlywheels/**/*.json",
+    "caniuseonlywheels/**/*.cfg",
 ]
 exclude = [
 ]
@@ -36,7 +38,7 @@ documentation ="https://github.com/matthewdeanmartin/caniuseonlywheels"
 "Change Log" = "https://github.com/matthewdeanmartin/caniuseonlywheels/blob/main/CHANGES.md"
 
 [tool.poetry.scripts]
-pydoc_fork = 'caniuseonlywheels.__main__:main'
+caniuseonlywheels = 'caniuseonlywheels.__main__:main'
 
 [tool.poetry.dependencies]
 python = ">=3.3, <4.0"
