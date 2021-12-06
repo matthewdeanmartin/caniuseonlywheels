@@ -32,3 +32,4 @@ htmlcov
 .tox
 nosetests.xml
 .idea
+.env
