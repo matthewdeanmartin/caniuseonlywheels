@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "caniuseonlywheels"
-version = "1.0.5"
+version = "1.0.6"
 description = "Can I switch to installing only using wheels and never sdist?"
 authors = ["Matthew Martin <matthewdeanmartin@gmail.com>"]
 keywords = ["supply-chain", "wheels"]
