@@ -19,8 +19,8 @@ import tempfile
 
 import caniuseonlywheels.__main__ as ciu_main
 from caniuseonlywheels import projects, pypi
-from caniuseonlywheels.test import mock, skip_pypi_timeouts, unittest
-from caniuseonlywheels.test.custom_temp_file import CustomNamedTemporaryFile
+from test import mock, skip_pypi_timeouts, unittest
+from test.custom_temp_file import CustomNamedTemporaryFile
 
 EXAMPLE_REQUIREMENTS = """
 # From

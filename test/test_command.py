@@ -17,7 +17,7 @@ from distutils import dist
 import setuptools  # To suppress a warning.
 
 from caniuseonlywheels import command
-from caniuseonlywheels.test import mock, skip_pypi_timeouts, unittest
+from test import mock, skip_pypi_timeouts, unittest
 
 
 def make_command(requires):

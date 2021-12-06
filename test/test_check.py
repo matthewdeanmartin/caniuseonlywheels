@@ -16,8 +16,8 @@
 import tempfile
 
 import caniuseonlywheels as ciu
-from caniuseonlywheels.test import skip_pypi_timeouts, unittest
-from caniuseonlywheels.test.custom_temp_file import CustomNamedTemporaryFile
+from test import skip_pypi_timeouts, unittest
+from test.custom_temp_file import CustomNamedTemporaryFile
 
 wheelless_project = "stackapi"  # https://pypi.org/project/PuLP/
 

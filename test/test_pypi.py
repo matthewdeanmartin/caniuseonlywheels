@@ -16,7 +16,7 @@
 import packaging.utils
 
 from caniuseonlywheels import pypi
-from caniuseonlywheels.test import skip_pypi_timeouts, unittest
+from test import skip_pypi_timeouts, unittest
 
 
 class NameTests(unittest.TestCase):
@@ -53,7 +53,7 @@ class OverridesTests(unittest.TestCase):
     def test_success(self):
         overrides = pypi.manual_overrides()
         self.assertTrue(len(overrides) >= 1)
-        self.assertIn("termcolor", overrides)
+        self.assertIn("dummy-xyzzy-12341234123412341234", overrides)
 
 
 class NetworkTests(unittest.TestCase):

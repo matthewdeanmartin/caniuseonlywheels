@@ -17,9 +17,9 @@ import io
 
 import setuptools  # To silence a warning.
 
-import caniuseonlywheels.distlib.locators
+import distlib.locators
 from caniuseonlywheels import dependencies, pypi
-from caniuseonlywheels.test import mock, unittest
+from test import mock, unittest
 
 
 class GraphResolutionTests(unittest.TestCase):

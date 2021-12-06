@@ -15,6 +15,8 @@ import socket
 from collections import deque
 from glob import iglob as std_iglob
 
+import certifi
+
 try:
     import ssl
 except ImportError:  # pragma: no cover
@@ -46,7 +48,6 @@ from .compat import (
     httplib,
     raw_input,
     shutil,
-    splittype,
     string_types,
     text_type,
     unquote,
@@ -88,7 +89,7 @@ def parse_marker(marker_string):
         m = IDENTIFIER.match(remaining)
         if m:
             result = m.groups()[0]
-            remaining = remaining[m.end() :]
+            remaining = remaining[m.end():]
         elif not remaining:
             raise SyntaxError("unexpected end of input")
         else:
@@ -110,7 +111,7 @@ def parse_marker(marker_string):
                     if not m:
                         raise SyntaxError("error in string literal: %s" % remaining)
                     parts.append(m.groups()[0])
-                    remaining = remaining[m.end() :]
+                    remaining = remaining[m.end():]
             else:
                 s = "".join(parts)
                 raise SyntaxError("unterminated string: %s" % s)
@@ -132,7 +133,7 @@ def parse_marker(marker_string):
                 if not m:
                     break
                 op = m.groups()[0]
-                remaining = remaining[m.end() :]
+                remaining = remaining[m.end():]
                 rhs, remaining = marker_var(remaining)
                 lhs = {"op": op, "lhs": lhs, "rhs": rhs}
             result = lhs
@@ -144,7 +145,7 @@ def parse_marker(marker_string):
             m = AND.match(remaining)
             if not m:
                 break
-            remaining = remaining[m.end() :]
+            remaining = remaining[m.end():]
             rhs, remaining = marker_expr(remaining)
             lhs = {"op": "and", "lhs": lhs, "rhs": rhs}
         return lhs, remaining
@@ -155,7 +156,7 @@ def parse_marker(marker_string):
             m = OR.match(remaining)
             if not m:
                 break
-            remaining = remaining[m.end() :]
+            remaining = remaining[m.end():]
             rhs, remaining = marker_and(remaining)
             lhs = {"op": "or", "lhs": lhs, "rhs": rhs}
         return lhs, remaining
@@ -175,21 +176,21 @@ def parse_requirement(req):
     if not m:
         raise SyntaxError("name expected: %s" % remaining)
     distname = m.groups()[0]
-    remaining = remaining[m.end() :]
+    remaining = remaining[m.end():]
     extras = mark_expr = versions = uri = None
     if remaining and remaining[0] == "[":
         i = remaining.find("]", 1)
         if i < 0:
             raise SyntaxError("unterminated extra: %s" % remaining)
         s = remaining[1:i]
-        remaining = remaining[i + 1 :].lstrip()
+        remaining = remaining[i + 1:].lstrip()
         extras = []
         while s:
             m = IDENTIFIER.match(s)
             if not m:
                 raise SyntaxError("malformed extra: %s" % s)
             extras.append(m.groups()[0])
-            s = s[m.end() :]
+            s = s[m.end():]
             if not s:
                 break
             if s[0] != ",":
@@ -212,7 +213,7 @@ def parse_requirement(req):
             # exceptions for malformed URLs
             if not (t.scheme and t.netloc):
                 raise SyntaxError("Invalid URL: %s" % uri)
-            remaining = remaining[m.end() :].lstrip()
+            remaining = remaining[m.end():].lstrip()
         else:
 
             def get_versions(ver_remaining):
@@ -226,13 +227,13 @@ def parse_requirement(req):
                     versions = []
                     while True:
                         op = m.groups()[0]
-                        ver_remaining = ver_remaining[m.end() :]
+                        ver_remaining = ver_remaining[m.end():]
                         m = VERSION_IDENTIFIER.match(ver_remaining)
                         if not m:
                             raise SyntaxError("invalid version: %s" % ver_remaining)
                         v = m.groups()[0]
                         versions.append((op, v))
-                        ver_remaining = ver_remaining[m.end() :]
+                        ver_remaining = ver_remaining[m.end():]
                         if not ver_remaining or ver_remaining[0] != ",":
                             break
                         ver_remaining = ver_remaining[1:].lstrip()
@@ -254,7 +255,7 @@ def parse_requirement(req):
                 if i < 0:
                     raise SyntaxError("unterminated parenthesis: %s" % remaining)
                 s = remaining[1:i]
-                remaining = remaining[i + 1 :].lstrip()
+                remaining = remaining[i + 1:].lstrip()
                 # As a special diversion from PEP 508, allow a version number
                 # a.b.c in parentheses as a synonym for ~= a.b.c (because this
                 # is allowed in earlier PEPs)
@@ -265,7 +266,7 @@ def parse_requirement(req):
                     if not m:
                         raise SyntaxError("invalid constraint: %s" % s)
                     v = m.groups()[0]
-                    s = s[m.end() :].lstrip()
+                    s = s[m.end():].lstrip()
                     if s:
                         raise SyntaxError("invalid constraint: %s" % s)
                     versions = [("~=", v)]
@@ -302,7 +303,7 @@ def get_resources_dests(resources_root, rules):
         root = root.replace(os.path.sep, "/")
         path = path.replace(os.path.sep, "/")
         assert path.startswith(root)
-        return path[len(root) :].lstrip("/")
+        return path[len(root):].lstrip("/")
 
     destinations = {}
     for base, suffix, dest in rules:
@@ -615,7 +616,8 @@ class FileOperator(object):
                 self.dirs_created.add(path)
 
     def byte_compile(
-        self, path, optimize=False, force=False, prefix=None, hashed_invalidation=False
+            self, path, optimize=False, force=False, prefix=None,
+            hashed_invalidation=False
     ):
         dpath = cache_from_source(path, not optimize)
         logger.info("Byte-compiling %s to %s", path, dpath)
@@ -625,7 +627,7 @@ class FileOperator(object):
                     diagpath = None
                 else:
                     assert path.startswith(prefix)
-                    diagpath = path[len(prefix) :]
+                    diagpath = path[len(prefix):]
             compile_kwargs = {}
             if hashed_invalidation and hasattr(py_compile, "PycInvalidationMode"):
                 compile_kwargs[
@@ -738,10 +740,10 @@ class ExportEntry(object):
             result = False
         else:
             result = (
-                self.name == other.name
-                and self.prefix == other.prefix
-                and self.suffix == other.suffix
-                and self.flags == other.flags
+                    self.name == other.name
+                    and self.prefix == other.prefix
+                    and self.suffix == other.suffix
+                    and self.flags == other.flags
             )
         return result
 
@@ -904,7 +906,7 @@ def split_filename(filename, project_name=None):
         m = re.match(re.escape(project_name) + r"\b", filename)
         if m:
             n = m.end()
-            result = filename[:n], filename[n + 1 :], pyver
+            result = filename[:n], filename[n + 1:], pyver
     if result is None:
         m = PROJECT_NAME_AND_VERSION.match(filename)
         if m:
@@ -969,12 +971,16 @@ def _get_external_data(url):
         # import urllib2
 
         # urllib2 can't cope with modern ssl certs.
-        import ssl
 
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-        resp = urlopen(url, context=ctx)
+        # ctx = ssl.create_default_context()
+        # ctx.check_hostname = False
+        # ctx.verify_mode = ssl.CERT_NONE
+        # try:
+        context = ssl.create_default_context(cafile=certifi.where())
+        resp = urlopen(url, context=context)
+        # except:
+        #     print("Couldn't not validate cert")
+        #     resp = urlopen(url, context=ctx)
         headers = resp.info()
         ct = headers.get("Content-Type")
         if not ct.startswith("application/json"):
@@ -1488,6 +1494,7 @@ if ssl:
     from .compat import HTTPSHandler as BaseHTTPSHandler
     from .compat import match_hostname
 
+
     #
     # HTTPSConnection which verifies certificates/matches domains
     #
@@ -1539,6 +1546,7 @@ if ssl:
                     self.sock.close()
                     raise
 
+
     class HTTPSHandler(BaseHTTPSHandler):
         def __init__(self, ca_certs, check_domain=True):
             BaseHTTPSHandler.__init__(self)
@@ -1572,6 +1580,7 @@ if ssl:
                 else:
                     raise
 
+
     #
     # To prevent against mixing HTTP traffic with HTTPS (examples: A Man-In-The-
     # Middle proxy using HTTP listens on port 443, or an index mistakenly serves
@@ -1588,7 +1597,6 @@ if ssl:
                 "connection: %s" % req
             )
 
-
 #
 # XML-RPC with timeouts
 #
@@ -1602,6 +1610,7 @@ if _ver_info == (2, 6):
             if port == 0:  # 0 means use port 0, not the default port
                 port = None
             self._setup(self._connection_class(host, port, **kwargs))
+
 
     if ssl:
 
@@ -1748,7 +1757,6 @@ class CSVWriter(CSVBase):
 
 
 class Configurator(BaseConfigurator):
-
     value_converters = dict(BaseConfigurator.value_converters)
     value_converters["inc"] = "inc_convert"
 
@@ -1868,7 +1876,6 @@ def normalize_name(name):
 
 
 class PyPIRCFile(object):
-
     DEFAULT_REPOSITORY = "https://upload.pypi.org/legacy/"
     DEFAULT_REALM = "pypi"
 
@@ -1906,9 +1913,9 @@ class PyPIRCFile(object):
 
                         # optional params
                         for key, default in (
-                            ("repository", self.DEFAULT_REPOSITORY),
-                            ("realm", self.DEFAULT_REALM),
-                            ("password", None),
+                                ("repository", self.DEFAULT_REPOSITORY),
+                                ("realm", self.DEFAULT_REALM),
+                                ("password", None),
                         ):
                             if config.has_option(server, key):
                                 result[key] = config.get(server, key)
@@ -1919,13 +1926,13 @@ class PyPIRCFile(object):
                         # section of their config set to the HTTP (rather than
                         # HTTPS) URL
                         if server == "pypi" and repository in (
-                            self.DEFAULT_REPOSITORY,
-                            "pypi",
+                                self.DEFAULT_REPOSITORY,
+                                "pypi",
                         ):
                             result["repository"] = self.DEFAULT_REPOSITORY
                         elif (
-                            result["server"] != repository
-                            and result["repository"] != repository
+                                result["server"] != repository
+                                and result["repository"] != repository
                         ):
                             result = {}
             elif "server-login" in sections:

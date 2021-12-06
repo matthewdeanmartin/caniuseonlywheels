@@ -56,7 +56,9 @@ def _manual_overrides(_cache_date=None):
     then only if that fails is the included file used.
     """
     log = logging.getLogger("ciu")
-    request = requests.get("https://raw.githubusercontent.com/TODO/overrides.json")
+    request = requests.get("https://raw.githubusercontent.com/"
+                           "matthewdeanmartin/caniuseonlywheels/"
+                           "master/caniuseonlywheels/overrides.json")
     if request.status_code == 200:
         log.info("Overrides loaded from GitHub and cached")
         overrides = request.json()
