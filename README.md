@@ -26,20 +26,26 @@ a direct dependency. If you have a transitive dependency, i.e. you want to insta
 which in turn installs package B, which doesn't have a wheel. In such a case you must convince
 B to publish a wheel or convince A to vendorize/remove the dependency.
 
-1. Use piwheels add to /etc/pip.conf.
+* Use piwheels add to /etc/pip.conf.
 ```
 [global]
 extra-index-url=https://www.piwheels.org/simple
 ```
 Piwheels.org is now another volunteer organization you will depend on in addtion to pypi.
-2. Ask them to make a wheel. 
-3. If they published the script that published to pypi, offer a PR to include bdist_wheel
-4. Offer to become a contributor on the github repo if the owner doesn't want to be bothered with the work of doing 
+
+* Ask them to make a wheel.
+
+* If they published the script that published to pypi, offer a PR to include bdist_wheel
+ 
+* Offer to become a contributor on the github repo if the owner doesn't want to be bothered with the work of doing 
    pull requests
-5. If you have a direct dependency, fork it and publish `project-name-whl` to pypi. This creates a maintenance
+
+* If you have a direct dependency, fork it and publish `project-name-whl` to pypi. This creates a maintenance
    headache keeping them in sync!
-6. If you have a direct dependency, vendorize the code. This is also a maintenance pain for keeping in sync with upgrades!
-7. If the project is abandoned and meets many other criteria, attempt a PEP 541 takeover of the pypi name and 
+
+* If you have a direct dependency, vendorize the code. This is also a maintenance pain for keeping in sync with upgrades!
+
+* If the project is abandoned and meets many other criteria, attempt a PEP 541 takeover of the pypi name and 
    then publish a wheel. The pypi org really can't cope with these requests.
 
 
