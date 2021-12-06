@@ -33,9 +33,9 @@ extra-index-url=https://www.piwheels.org/simple
 ```
 Piwheels.org is now another volunteer organization you will depend on in addtion to pypi.
 
-* Ask them to make a wheel.
+* Ask the package owner to make a wheel.
 
-* If they published the script that published to pypi, offer a PR to include bdist_wheel
+* If the package owner published the script that published to pypi, offer a PR to include bdist_wheel
  
 * Offer to become a contributor on the github repo if the owner doesn't want to be bothered with the work of doing 
    pull requests
@@ -46,7 +46,7 @@ Piwheels.org is now another volunteer organization you will depend on in addtion
 * If you have a direct dependency, vendorize the code. This is also a maintenance pain for keeping in sync with upgrades!
 
 * If the project is abandoned and meets many other criteria, attempt a PEP 541 takeover of the pypi name and 
-   then publish a wheel. The pypi org really can't cope with these requests.
+   then publish a wheel. The pypi.org really can't cope with these requests, it is very burdensome because of the risk of abuse.
 
 
 ## Installation
