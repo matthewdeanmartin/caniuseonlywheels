@@ -1,4 +1,4 @@
-## Can I Use Just Wheels?
+## Can I Use Only Wheels?
 
 Are you worried about supply chain risks? You should be. Any clown can highjack a pypi package
 and replace with a malicious package that can run malicious code on:
@@ -6,7 +6,7 @@ and replace with a malicious package that can run malicious code on:
 - import
 - invocation
 
-Can't do anything about import and invocation, but it is unnecessary to run setup.py, **just always
+Can't do anything about import and invocation, but it is unnecessary to run setup.py, **always
 install wheels**, using the following switches.
 
 ```bash
