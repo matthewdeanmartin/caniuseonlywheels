@@ -3,23 +3,24 @@ name: Build and Test
 on: [ push ]
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
 
-        steps:
-            -   uses: actions/checkout@v3
-            -   uses: actions/setup-python@v4
-                with:
-                    python-version: '3.11'
-                    cache: 'poetry' # caching poetry dependencies
-            -   name: Install poetry and pipx
-                run: |
-                    pip install poetry && pip install pipx
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install poetry and pipx
+        run: |
+          pip install poetry && pip install pipx
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'poetry' # caching poetry dependencies
 
-            -   name: Install Dependencies
-                run: poetry install --with dev
 
-            -   name: Run build.sh
-                run: |
-                    chmod +x build.sh
-                    ./build.sh
+      - name: Install Dependencies
+        run: poetry install --with dev
+
+      - name: Run build.sh
+        run: |
+          chmod +x build.sh
+          ./build.sh
