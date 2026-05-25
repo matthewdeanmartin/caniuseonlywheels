@@ -113,4 +113,6 @@ ONLY_NAMED_AND_SUBS = false
 output_dir = "doc/docs_portray"
 
 [tool.uv]
+
+[tool.uv.pip]
 universal = true
