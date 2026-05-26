@@ -51,8 +51,12 @@ certifi=">=2020.6.20"
 pytest = ">=7.4.3"
 pytest-cov = ">=2.10.1"
 flake8 = ">1"
-pylint = ">1"
+pylint = ">=3.0"
+mypy = ">=1.8"
 check-wheel-contents = ">=0.6.0"
+black = ">=24.0"
+isort = ">=5.13"
+ruff = ">=0.4"
 
 [tool.black]
 line-length = 88
@@ -111,6 +115,12 @@ ONLY_NAMED_AND_SUBS = false
 
 [tool.portray]
 output_dir = "doc/docs_portray"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.8",
+    "pylint>=3.0",
+]
 
 [tool.uv]
 
