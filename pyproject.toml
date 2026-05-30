@@ -35,7 +35,7 @@ documentation ="https://github.com/matthewdeanmartin/caniuseonlywheels"
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/matthewdeanmartin/caniuseonlywheels/issues"
-"Change Log" = "https://github.com/matthewdeanmartin/caniuseonlywheels/blob/main/CHANGES.md"
+"Change Log" = "https://github.com/matthewdeanmartin/caniuseonlywheels/blob/main/CHANGELOG.md"
 
 [tool.poetry.scripts]
 caniuseonlywheels = 'caniuseonlywheels.__main__:main'

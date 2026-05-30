@@ -62,3 +62,9 @@ python -m caniuseonlywheels -r requirements.txt --verbose
 
 ## Credits
 Forked from "caniusepython3", Apache License, Original developer - Brett Cannon.
+
+## Project Links
+
+- [GitHub](https://github.com/matthewdeanmartin/caniuseonlywheels)
+- [PyPI](https://pypi.org/project/caniuseonlywheels/)
+- [Bug Tracker](https://github.com/matthewdeanmartin/caniuseonlywheels/issues)
