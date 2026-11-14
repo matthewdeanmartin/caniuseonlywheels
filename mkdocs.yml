@@ -1,0 +1,16 @@
+site_name: Can I Use Only Wheels?
+site_url: https://caniuseonlywheels.readthedocs.io/en/latest/
+site_description: Check whether Python projects and their dependencies publish wheels.
+repo_url: https://github.com/matthewdeanmartin/caniuseonlywheels
+edit_uri: edit/main/docs/
+theme:
+  name: readthedocs
+nav:
+  - Overview: index.md
+  - Usage: usage.md
+  - Limitations: limitations.md
+validation:
+  nav:
+    omitted_files: warn
+  links:
+    not_found: warn

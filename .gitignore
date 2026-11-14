@@ -33,3 +33,7 @@ htmlcov
 nosetests.xml
 .idea
 .env
+/site/
+/landing/public/
+/landing/resources/
+/landing/.hugo_build.lock

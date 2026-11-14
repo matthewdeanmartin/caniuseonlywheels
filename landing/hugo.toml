@@ -1,0 +1,7 @@
+baseURL = 'https://matthewdeanmartin.github.io/caniuseonlywheels/'
+locale = 'en-US'
+title = 'Can I Use Only Wheels? — inspect wheel availability'
+disableKinds = ['taxonomy', 'term', 'RSS']
+
+[params]
+  description = 'Explore whether Python projects and their dependencies publish wheels before adopting wheel-only installs.'

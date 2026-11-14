@@ -1,13 +1,16 @@
-[tool.poetry]
+[project]
 name = "caniuseonlywheels"
 version = "1.0.11"
 description = "Can I switch to installing only using wheels and never sdist?"
-authors = ["Matthew Martin <matthewdeanmartin@gmail.com>"]
+readme = "README.md"
+license-files = ["LICENSE"]
+requires-python = ">=3.7,<4.0"
+authors = [{ name = "Matthew Martin", email = "matthewdeanmartin@gmail.com" }]
 keywords = ["supply-chain", "wheels"]
+license = "MIT"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
@@ -20,43 +23,22 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
 ]
-include = [
-    "caniuseonlywheels/**/*.py",
-    "caniuseonlywheels/**/*.json",
-    "caniuseonlywheels/**/*.cfg",
+dependencies = [
+    "packaging>=20",
+    "setuptools>=60",
+    "requests>=2.23.0",
+    "certifi>=2020.6.20",
 ]
-exclude = [
-]
-license = "MIT"
-readme = "README.md"
-repository = "https://github.com/matthewdeanmartin/caniuseonlywheels"
-homepage = "https://github.com/matthewdeanmartin/caniuseonlywheels"
-documentation ="https://github.com/matthewdeanmartin/caniuseonlywheels"
 
-[tool.poetry.urls]
+[project.urls]
+Homepage = "https://matthewdeanmartin.github.io/caniuseonlywheels/"
+Documentation = "https://caniuseonlywheels.readthedocs.io/en/latest/"
+Repository = "https://github.com/matthewdeanmartin/caniuseonlywheels"
 "Bug Tracker" = "https://github.com/matthewdeanmartin/caniuseonlywheels/issues"
 "Change Log" = "https://github.com/matthewdeanmartin/caniuseonlywheels/blob/main/CHANGELOG.md"
 
-[tool.poetry.scripts]
-caniuseonlywheels = 'caniuseonlywheels.__main__:main'
-
-[tool.poetry.dependencies]
-python = ">=3.7, <4.0"
-packaging = ">=20"
-setuptools= ">=60"
-requests=">=2.23.0"
-certifi=">=2020.6.20"
-
-[tool.poetry.dev-dependencies]
-pytest = ">=7.4.3"
-pytest-cov = ">=2.10.1"
-flake8 = ">1"
-pylint = ">=3.0"
-mypy = ">=1.8"
-check-wheel-contents = ">=0.6.0"
-black = ">=24.0"
-isort = ">=5.13"
-ruff = ">=0.4"
+[project.scripts]
+caniuseonlywheels = "caniuseonlywheels.__main__:main"
 
 [tool.black]
 line-length = 88
@@ -82,8 +64,16 @@ exclude = '''
 )
 '''
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["caniuseonlywheels*"]
+
+[tool.setuptools.package-data]
+caniuseonlywheels = ["*.json", "*.txt"]
+"caniuseonlywheels.distlib" = ["*.exe"]
+"caniuseonlywheels.distlib._backport" = ["*.cfg"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -118,8 +108,17 @@ output_dir = "doc/docs_portray"
 
 [dependency-groups]
 dev = [
-    "mypy>=1.8",
-    "pylint>=3.0",
+    "pytest>=7.4.3; python_version >= '3.11'",
+    "pytest-cov>=2.10.1; python_version >= '3.11'",
+    "flake8>1; python_version >= '3.11'",
+    "pylint>=3.0; python_version >= '3.11'",
+    "mypy>=1.8; python_version >= '3.11'",
+    "check-wheel-contents>=0.6.0; python_version >= '3.11'",
+    "black>=24.0; python_version >= '3.11'",
+    "isort>=5.13; python_version >= '3.11'",
+    "ruff>=0.4; python_version >= '3.11'",
+    "vermin; python_version >= '3.11'",
+    "distlib; python_version >= '3.11'",
 ]
 
 [tool.uv]

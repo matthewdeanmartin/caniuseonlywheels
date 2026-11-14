@@ -66,7 +66,10 @@ def _manual_overrides(_cache_date=None):
         log.info("Overrides loaded from included package data and cached")
         raw_bytes = pkgutil.get_data(__name__, "overrides.json")
         overrides = json.loads(raw_bytes.decode("utf-8"))
-    return frozenset(map(packaging.utils.canonicalize_name, overrides.keys()))
+    return {
+        packaging.utils.canonicalize_name(name): replacement
+        for name, replacement in overrides.items()
+    }
 
 
 def supports_wheels(project_name, index_url=PYPI_INDEX_URL):

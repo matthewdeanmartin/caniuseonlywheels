@@ -19,7 +19,7 @@ import tempfile
 
 import caniuseonlywheels.__main__ as ciu_main
 from caniuseonlywheels import projects, pypi
-from test import mock, skip_pypi_timeouts, unittest
+from test import mock, unittest
 from test.custom_temp_file import CustomNamedTemporaryFile
 
 EXAMPLE_REQUIREMENTS = """
@@ -235,18 +235,20 @@ class CLITests(unittest.TestCase):
 
 # @unittest.skip('faster testing')
 class NetworkTests(unittest.TestCase):
-    @skip_pypi_timeouts
+    @mock.patch("caniuseonlywheels.dependencies.blockers", return_value=[])
     @mock.patch("sys.stdout", io.StringIO())
-    def test_e2e(self):
+    def test_e2e(self, blockers):
         # Make sure at least one project that will never be support wheels is included
         args = "--projects", "termcolor"
         ciu_main.main(args)
+        blockers.assert_called_once()
 
-    @skip_pypi_timeouts
+    @mock.patch("caniuseonlywheels.dependencies.blockers", return_value=[])
     @mock.patch("sys.stdout", io.StringIO())
-    def test_e2e_with_specified_index(self):
+    def test_e2e_with_specified_index(self, blockers):
         args = "--projects", "paste", "--index", pypi.PYPI_INDEX_URL
         ciu_main.main(args)
+        blockers.assert_called_once_with({"paste"}, pypi.PYPI_INDEX_URL)
 
 
 if __name__ == "__main__":

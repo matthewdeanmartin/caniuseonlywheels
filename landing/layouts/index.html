@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0e2737">
+  <meta name="description" content="{{ .Site.Params.description }}">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{ .Site.Title }}">
+  <meta property="og:description" content="{{ .Site.Params.description }}">
+  <meta property="og:url" content="{{ .Permalink }}">
+  <title>{{ .Site.Title }}</title>
+  <link rel="canonical" href="{{ .Permalink }}">
+  <link rel="stylesheet" href="{{ "css/site.css" | relURL }}">
+</head>
+<body>
+  <header class="header wrap"><a class="logo" href="{{ .Site.BaseURL }}"><span class="logo-mark">◉</span><span>caniuse<span class="logo-accent">onlywheels</span></span></a><nav aria-label="Main navigation"><a href="#how-it-works">How it works</a><a href="#limits">What it checks</a><a href="https://github.com/matthewdeanmartin/caniuseonlywheels">GitHub ↗</a></nav></header>
+  <main>
+    <section class="hero wrap">
+      <div class="hero-copy"><p class="eyebrow"><span class="small-wheel">◉</span> WHEEL AVAILABILITY EXPLORER</p><h1>Before you go<br><em>wheels only,</em><br>see the gaps.</h1><p class="lead">Find Python projects in your dependency tree that appear to need source distributions. Get a starting point for a wheel-only install policy.</p><div class="hero-actions"><a class="button primary" href="https://github.com/matthewdeanmartin/caniuseonlywheels/blob/main/docs/usage.md">Read the guide <span>↗</span></a><a class="button secondary" href="https://pypi.org/project/caniuseonlywheels/">View on PyPI <span>↗</span></a></div><p class="under-hero">Checks index metadata · Does not install analyzed projects</p></div>
+      <div class="diagram" aria-label="Illustrative dependency tree, showing a project and its dependency paths"><div class="diagram-head"><span>DEPENDENCY MAP</span><span class="head-icon">↗</span></div><div class="node root"><span class="wheel-icon">◉</span><div><small>YOUR REQUIREMENTS</small><strong>my-app</strong></div><span class="node-tag">ROOT</span></div><div class="branch-line"></div><div class="node child good"><span class="wheel-icon">◉</span><div><small>DEPENDENCY</small><strong>package-a</strong></div><span class="state">WHEEL FOUND</span></div><div class="node child warning"><span class="wheel-icon">◌</span><div><small>DEPENDENCY</small><strong>package-b</strong></div><span class="state">REVIEW</span></div><div class="diagram-foot"><span class="legend-dot"></span> Follow the path to a possible blocker</div></div>
+    </section>
+
+    <section class="statement"><div class="wrap statement-inner"><span class="index">01 / THE QUESTION</span><h2>Where would a source build enter your install?</h2><p>Give the checker project names, a requirements file, or package metadata. It traces dependencies that appear to lack wheels and reports the path back to your input.</p></div></section>
+
+    <section class="steps wrap" id="how-it-works"><div class="section-heading"><span class="index">02 / THE WORKFLOW</span><h2>A quick read on<br>your dependency tree.</h2></div><div class="step-grid"><article><span class="step-number">01</span><h3>Choose an input</h3><p>Start with <code>--projects</code>, <code>--requirements</code>, or <code>--metadata</code>.</p></article><article><span class="step-number">02</span><h3>Inspect published files</h3><p>The checker queries package index metadata and looks for wheels on project releases.</p></article><article><span class="step-number">03</span><h3>Trace the blockers</h3><p>Review reported dependency paths, then test the exact versions you need with a wheel-only installer.</p></article></div><div class="command"><div class="command-label">TRY A CHECK</div><code><span>$</span> python -m caniuseonlywheels --requirements requirements.txt</code><a href="https://github.com/matthewdeanmartin/caniuseonlywheels/blob/main/docs/usage.md">More commands ↗</a></div></section>
+
+    <section class="limits" id="limits"><div class="wrap limits-inner"><div><span class="index">03 / READ THE RESULT</span><h2>Know what a<br>“wheel found” means.</h2></div><div class="limits-copy"><p>The checker asks whether <strong>any release has any wheel</strong>. It does not prove a compatible wheel exists for your Python version, platform, architecture, or chosen release.</p><p>Use its report to investigate. Let your installer enforce <code>--only-binary :all:</code> for the final dependency set. The checker is not a malware scanner.</p><a href="https://github.com/matthewdeanmartin/caniuseonlywheels/blob/main/docs/limitations.md">Read the limitations ↗</a></div></div></section>
+
+    <section class="closing wrap"><div><span class="index">READY TO EXPLORE?</span><h2>Start with your requirements.</h2><p>Learn the input options, inspect the output, and validate with a real wheel-only install.</p></div><a class="button primary" href="https://github.com/matthewdeanmartin/caniuseonlywheels/blob/main/docs/usage.md">Open the guide <span>↗</span></a></section>
+  </main>
+  <footer class="wrap"><span>caniuseonlywheels</span><div><a href="https://github.com/matthewdeanmartin/caniuseonlywheels/blob/main/docs/usage.md">Guide</a><a href="https://github.com/matthewdeanmartin/caniuseonlywheels">Source</a><a href="https://pypi.org/project/caniuseonlywheels/">PyPI</a></div></footer>
+</body>
+</html>

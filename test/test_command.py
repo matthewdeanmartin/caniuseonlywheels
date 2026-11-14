@@ -17,11 +17,15 @@ from distutils import dist
 import setuptools  # To suppress a warning.
 
 from caniuseonlywheels import command
-from test import mock, skip_pypi_timeouts, unittest
+from test import mock, unittest
 
 
 def make_command(requires):
-    return command.Command(dist.Distribution(requires))
+    distribution = dist.Distribution({key: value for key, value in requires.items() if key != "tests_require"})
+    if "tests_require" in requires:
+        # Modern setuptools no longer stores this legacy option on Distribution.
+        distribution.tests_require = requires["tests_require"]
+    return command.Command(distribution)
 
 
 class RequiresTests(unittest.TestCase):
@@ -61,6 +65,7 @@ class OptionsTests(unittest.TestCase):
 
 
 class NetworkTests(unittest.TestCase):
-    @skip_pypi_timeouts
-    def test_run(self):
+    @mock.patch("caniuseonlywheels.__main__.check", return_value=True)
+    def test_run(self, check):
         make_command({"install_requires": ["pip"]}).run()
+        check.assert_called_once_with(["pip"])

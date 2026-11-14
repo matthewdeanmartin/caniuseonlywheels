@@ -16,7 +16,7 @@
 import packaging.utils
 
 from caniuseonlywheels import pypi
-from test import skip_pypi_timeouts, unittest
+from test import mock, unittest
 
 
 class NameTests(unittest.TestCase):
@@ -44,21 +44,39 @@ class NameTests(unittest.TestCase):
 
 
 class OverridesTests(unittest.TestCase):
-    @skip_pypi_timeouts
+    def setUp(self):
+        pypi._manual_overrides.cache_clear()
+        request = mock.patch("caniuseonlywheels.pypi.requests.get", return_value=mock.Mock(status_code=404))
+        request.start()
+        self.addCleanup(request.stop)
+        self.addCleanup(pypi._manual_overrides.cache_clear)
+
     def test_canonicalization(self):
         for name in pypi.manual_overrides():
             self.assertEqual(name, packaging.utils.canonicalize_name(name))
 
-    @skip_pypi_timeouts
     def test_success(self):
         overrides = pypi.manual_overrides()
         self.assertTrue(len(overrides) >= 1)
         self.assertIn("dummy-xyzzy-12341234123412341234", overrides)
+        self.assertEqual(overrides["dummy-xyzzy-12341234123412341234"], "https://pypi.org/project/termcolor-whl/")
 
 
 class NetworkTests(unittest.TestCase):
-    @skip_pypi_timeouts
-    def test_supports_wheels(self):
+    @mock.patch("caniuseonlywheels.pypi.requests.get")
+    def test_supports_wheels(self, get):
+        def response(url):
+            if "/caniuseonlywheels/json" in url:
+                result = mock.Mock(status_code=200)
+                result.json.return_value = {"releases": {"1.0": [{"filename": "caniuseonlywheels-1.0-py3-none-any.whl"}]}}
+                return result
+            if "/pil/json" in url:
+                result = mock.Mock(status_code=200)
+                result.json.return_value = {"releases": {"1.0": [{"filename": "pil-1.0.tar.gz"}]}}
+                return result
+            return mock.Mock(status_code=404)
+
+        get.side_effect = response
         self.assertTrue(pypi.supports_wheels("caniuseonlywheels"))
         self.assertFalse(pypi.supports_wheels("pil"))
         # Unfound projects are considered ported.

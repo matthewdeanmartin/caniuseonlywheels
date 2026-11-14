@@ -1,5 +1,7 @@
 ## Can I Use Only Wheels?
 
+[Homepage](https://matthewdeanmartin.github.io/caniuseonlywheels/) · [User guide](https://github.com/matthewdeanmartin/caniuseonlywheels/blob/main/docs/usage.md) · [PyPI](https://pypi.org/project/caniuseonlywheels/)
+
 Are you worried about supply chain risks? You should be. Any clown can highjack a pypi package
 and replace with a malicious package that can run malicious code on:
 - install pip/setup.py *
@@ -19,6 +21,8 @@ pip install termcolor --only-binary=:all:
 But now you need to find out one by one, what in your requirements.txt doesn't support wheels!
 
 Fortunately, here is a tool, based on the guts of caniusepython3.
+
+**Scope:** This tool looks for any published wheel for each project it checks. It does not verify that the wheel fits a particular Python version, operating system, or current release, and it is not a malware scanner. Enforce wheel-only installation with your installer after reviewing the result.
 
 ### So what do I do if the project doesn't have a wheel?
 All the options have serious pros and cons. Some options are only available if you have
