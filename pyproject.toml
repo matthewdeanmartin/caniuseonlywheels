@@ -119,9 +119,21 @@ dev = [
     "ruff>=0.4; python_version >= '3.11'",
     "vermin; python_version >= '3.11'",
     "distlib; python_version >= '3.11'",
+    "keepachangelog-manager-fork; python_version >= '3.11'",
 ]
 
 [tool.uv]
 
 [tool.uv.pip]
 universal = true
+
+[tool.changelogmanager.versioning]
+scheme = "semver"
+
+[tool.changelogmanager.validation]
+enforce_preamble = true
+format = "auto"
+
+[[tool.changelogmanager.components]]
+name = "default"
+changelog = "CHANGELOG.md"

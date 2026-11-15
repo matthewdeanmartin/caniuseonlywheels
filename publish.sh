@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Manual release only. Review the version and changelog before running.
-uv version --bump patch --no-sync
+# Manual release only. Review the changelog and version preview before running.
+uv run --frozen --no-build changelogmanager validate --strict
+uv run --frozen --no-build changelogmanager release --bump-versions --pyproject-only --yes
 uv lock --no-build
 bash ./build.sh
 version="$(uv version --short)"
