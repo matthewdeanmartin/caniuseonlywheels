@@ -22,7 +22,9 @@ But now you need to find out one by one, what in your requirements.txt doesn't s
 
 Fortunately, here is a tool, based on the guts of caniusepython3.
 
-**Scope:** This tool looks for any published wheel for each project it checks. It does not verify that the wheel fits a particular Python version, operating system, or current release, and it is not a malware scanner. Enforce wheel-only installation with your installer after reviewing the result.
+**Unreleased repair:** The checkout now audits an already resolved environment or a flat exact-pinned requirements lock. It checks every recorded version, including transitive dependencies, for a wheel compatible with the running Python. Missing wheels and unknown checks fail separately. Published 1.0.11 still has the older name-based checker and can report false success; the behavior below is not released yet.
+
+**Scope:** No dependency resolution, package installs, imports or source builds. Index/metadata errors never count as wheel support. Read the [usage guide](docs/usage.md) and [limitations](docs/limitations.md) for supported inputs and metadata limits.
 
 ### So what do I do if the project doesn't have a wheel?
 All the options have serious pros and cons. Some options are only available if you have
@@ -54,14 +56,20 @@ Piwheels.org is now another volunteer organization you will depend on in addtion
 
 
 ## Installation
+The published wheel predates the resolved-set repair described here.
+
 ```bash
 pip install caniuseonlywheels  --only-binary=:all:
 ```
 
 ## Usage
 ```bash
-pip freeze>requirements.txt
-python -m caniuseonlywheels -r requirements.txt --verbose
+# Export your existing uv lock, with all transitive pins:
+uv export --frozen --no-hashes --no-emit-project --no-dev -o wheels.txt
+python -m caniuseonlywheels -r wheels.txt --verbose
+
+# Or inspect the running virtual environment:
+.venv/Scripts/python.exe -m caniuseonlywheels --venv .venv
 ```
 
 ## Credits

@@ -4,4 +4,4 @@ title = 'Can I Use Only Wheels? — inspect wheel availability'
 disableKinds = ['taxonomy', 'term', 'RSS']
 
 [params]
-  description = 'Explore whether Python projects and their dependencies publish wheels before adopting wheel-only installs.'
+  description = 'Audit exact versions from a resolved environment or lock export for compatible published wheels. Unreleased repair.'

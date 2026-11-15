@@ -1,13 +1,39 @@
 # What the result means
 
-The checker asks whether **any release** of a project has **any wheel**. A positive result does not establish that the current version has a wheel for your Python version, operating system, architecture, or ABI.
+The unreleased resolved-set checker tests **each recorded exact version** against
+published release files using the running Python's interpreter, ABI and platform
+tags, plus `Requires-Python`. Wheels from other versions, incompatible tags,
+yanked files and suggestions to replace a package do not count. HTTP failures,
+missing releases, malformed metadata and incomplete resolved sets produce unknown
+results with a nonzero exit code.
 
-It reads dependency metadata and follows projects that appear to lack wheels. Failed or missing index responses can be treated as wheel-compatible, so problems may be missed. The tool also has a built-in override list. Review the result against the actual versions and platforms you support.
+This is a read-only audit of an existing resolution, not a dependency resolver.
+It never chooses versions, installs analyzed packages, imports them, or builds
+source distributions. A source-only package is a blocker even when it is pure
+Python. A matching published wheel must exist at the configured JSON index;
+locally built wheels and other indexes are not searched.
 
-The checker does not detect malicious code in a wheel or prove that a package is safe. It does not install analyzed projects. To require wheels during a real install, use your installer’s wheel-only option, for example:
+For a requirements export, dependency validation uses the exact release's
+`Requires-Dist` index metadata. That metadata can be absent, inaccurate, or differ
+between release artifacts; this check does not download and inspect every wheel.
+For a virtual environment it uses installed metadata. Every recorded pin is
+checked, but installed metadata cannot reconstruct the extras originally
+requested, so it cannot detect every absent optional dependency. Explicit extras
+in pinned requirements and dependencies activate their recorded requirements.
+Markers are evaluated on the running interpreter, not on a simulated platform.
+
+A success result establishes wheel availability for the **recorded set and
+metadata**. It does not guarantee that an installer will reproduce that set,
+that a file is downloadable, that hashes match, or that the package works. The
+tool does not detect malicious code or make wheels safe to import or execute.
+
+Use your installer's wheel-only option for the real install:
 
 ```bash
-python -m pip install --only-binary :all: -r requirements.txt
+python -m pip install --only-binary :all: -r wheels.txt
 ```
 
-That installer check is the final test of whether the selected dependency set has compatible published wheels.
+The published 1.0.11 release predates this repair. Its name-based traversal can
+miss source-only dependencies, accept historical/incompatible wheels, and report
+success after metadata errors. Do not use that release's success result as an
+installation gate.

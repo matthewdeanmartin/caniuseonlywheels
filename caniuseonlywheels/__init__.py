@@ -14,10 +14,8 @@
 
 """Calculate whether the specified package(s) and their dependencies support Wheels."""
 
-
 import multiprocessing
 
-from caniuseonlywheels import projects as projects_
 from caniuseonlywheels import pypi
 
 try:
@@ -26,28 +24,27 @@ except NotImplementedError:  # pragma: no cover
     CPU_COUNT = 2
 
 
-def check(requirements_paths=[], metadata=[], projects=[]):
-    """Return True if all of the specified dependencies support wheels.
+def check(
+    requirements_paths=(),
+    metadata=(),
+    projects=(),
+    venv=None,
+    index_url=pypi.PYPI_INDEX_URL,
+):
+    """Check a resolved environment or exact-pinned requirements export.
 
-    The requirements_paths argument takes a sequence of file paths to
-    requirements files. The 'metadata' argument takes a sequence of strings
-    representing metadata. The 'projects' argument takes a sequence of project
-    names.
-
-    Any project that is not listed on PyPI will be considered ported.
+    Return False for wheel blockers or unknown index/dependency checks.
+    Raise InputError for unsupported/unresolved input. No packages are installed.
     """
-    dependencies = []
-    dependencies.extend(projects_.projects_from_requirements(requirements_paths))
-    dependencies.extend(projects_.projects_from_metadata(metadata))
-    dependencies.extend(projects)
+    from caniuseonlywheels import resolved
 
-    manual_overrides = pypi.manual_overrides()
-
-    for dependency in dependencies:
-        if dependency in manual_overrides:
-            print(f"You will need to replace {dependency} "
-                  f"with {manual_overrides[dependency]}")
-            continue
-        elif not pypi.supports_wheels(dependency):
-            return False
-    return True
+    if metadata or projects or bool(requirements_paths) == bool(venv):
+        raise resolved.InputError(
+            "Supply either venv or requirements_paths with a fully pinned lock export; unresolved projects/metadata are unsupported"
+        )
+    pins = (
+        resolved.from_venv(venv)
+        if venv
+        else resolved.from_requirements(requirements_paths)
+    )
+    return resolved.audit(pins, index_url).passed

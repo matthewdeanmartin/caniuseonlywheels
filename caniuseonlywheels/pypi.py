@@ -56,9 +56,11 @@ def _manual_overrides(_cache_date=None):
     then only if that fails is the included file used.
     """
     log = logging.getLogger("ciu")
-    request = requests.get("https://raw.githubusercontent.com/"
-                           "matthewdeanmartin/caniuseonlywheels/"
-                           "master/caniuseonlywheels/overrides.json")
+    request = requests.get(
+        "https://raw.githubusercontent.com/"
+        "matthewdeanmartin/caniuseonlywheels/"
+        "master/caniuseonlywheels/overrides.json"
+    )
     if request.status_code == 200:
         log.info("Overrides loaded from GitHub and cached")
         overrides = request.json()
@@ -72,36 +74,109 @@ def _manual_overrides(_cache_date=None):
     }
 
 
-def supports_wheels(project_name, index_url=PYPI_INDEX_URL):
-    """Check with PyPI if a project supports wheels."""
-    log = logging.getLogger("ciu")
-    log.info("Checking {} ...".format(project_name))
-    url = "{}/{}/json".format(index_url, project_name)
-    request = requests.get(url)
-    if request.status_code >= 400:
-        log = logging.getLogger("ciu")
-        log.warning(
-            "problem fetching {}, assuming ported ({})".format(
-                project_name, request.status_code
+class MetadataError(ValueError):
+    """The index did not provide usable exact-release metadata."""
+
+
+def release_metadata(project_name, version, index_url=PYPI_INDEX_URL):
+    """Fetch one exact release. HTTP and metadata failures are never success."""
+    from urllib.parse import quote
+    from packaging.version import InvalidVersion, Version
+
+    url = "{}/{}/{}/json".format(
+        index_url.rstrip("/"),
+        quote(project_name, safe=""),
+        quote(str(version), safe=""),
+    )
+    logging.getLogger("ciu").info("Checking %s==%s", project_name, version)
+    try:
+        response = requests.get(url, timeout=(5, 30))
+        response.raise_for_status()
+        data = response.json()
+    except (requests.RequestException, ValueError) as exc:
+        raise MetadataError("Could not read {}: {}".format(url, exc)) from exc
+    try:
+        info = data["info"]
+        if packaging.utils.canonicalize_name(
+            info["name"]
+        ) != packaging.utils.canonicalize_name(project_name) or Version(
+            info["version"]
+        ) != Version(
+            str(version)
+        ):
+            raise MetadataError(
+                "Index returned a different project or version for {}=={}".format(
+                    project_name, version
+                )
             )
+        if "requires_dist" not in info or not isinstance(data["urls"], list):
+            raise MetadataError(
+                "Index response lacks release files or dependency metadata"
+            )
+    except (KeyError, TypeError, AttributeError, InvalidVersion) as exc:
+        raise MetadataError(
+            "Malformed exact-release metadata for {}=={}".format(project_name, version)
+        ) from exc
+    return data
+
+
+def release_supports_wheels(release, project_name, version):
+    """Match exact-release files to the running Python's interpreter/ABI/platform."""
+    from packaging.tags import sys_tags
+    from packaging.specifiers import SpecifierSet
+    from packaging.markers import default_environment
+    from packaging.version import Version
+
+    compatible = set(sys_tags())
+    found = False
+    for file_info in release["urls"]:
+        try:
+            filename = file_info["filename"]
+            if not isinstance(filename, str):
+                raise MetadataError("Invalid release filename")
+            if not filename.endswith(".whl"):
+                continue
+            name, wheel_version, _, tags = packaging.utils.parse_wheel_filename(
+                filename
+            )
+            if name != packaging.utils.canonicalize_name(
+                project_name
+            ) or wheel_version != Version(str(version)):
+                raise MetadataError(
+                    "Wheel filename does not match the exact release: {}".format(
+                        filename
+                    )
+                )
+            if not isinstance(file_info.get("yanked"), bool):
+                raise MetadataError(
+                    "Missing or invalid wheel yanked status: {}".format(filename)
+                )
+            if file_info["yanked"] or not compatible.intersection(tags):
+                continue
+            file_python = file_info.get("requires_python")
+            release_python = release["info"].get("requires_python")
+            if any(
+                value is not None and not isinstance(value, str)
+                for value in (file_python, release_python)
+            ):
+                raise MetadataError("Invalid Requires-Python metadata")
+            requires_python = file_python or release_python
+            if requires_python and not SpecifierSet(requires_python).contains(
+                default_environment()["python_full_version"], prereleases=True
+            ):
+                continue
+            found = True
+        except (KeyError, TypeError, ValueError) as exc:
+            raise MetadataError("Malformed wheel metadata: {}".format(exc)) from exc
+    return found
+
+
+def supports_wheels(project_name, version=None, index_url=PYPI_INDEX_URL):
+    """Check an exact release; this does not check its dependencies."""
+    if version is None:
+        raise MetadataError(
+            "An exact version is required; use a resolved environment or pinned lock"
         )
-        return True
-    response = request.json()
-    found1 = False
-
-    # is there at least 1 wheel? Maybe support scenario
-    # of checking if most recent has wheel, too.
-    for version, release in response["releases"].items():
-        for file_info in release:
-            if file_info["filename"].endswith(".whl"):
-                found1 = True
-                break
-        if found1:
-            break
-
-    return found1
-
-
-if __name__ == "__main__":
-    assert supports_wheels("jake")
-    assert not supports_wheels("termcolor")
+    return release_supports_wheels(
+        release_metadata(project_name, version, index_url), project_name, version
+    )

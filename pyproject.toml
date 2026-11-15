@@ -24,7 +24,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 dependencies = [
-    "packaging>=20",
+    "packaging>=20.9",
     "setuptools>=60",
     "requests>=2.23.0",
     "certifi>=2020.6.20",

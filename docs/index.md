@@ -1,7 +1,13 @@
 # Can I Use Only Wheels?
 
-`caniuseonlywheels` checks whether Python projects and their dependencies have published wheels. Give it a requirements file, installed package metadata, or project names. It reports dependency paths that still appear to need source distributions.
+`caniuseonlywheels` audits an already resolved Python environment or a flat,
+exact-pinned requirements export. It checks every recorded distribution,
+including transitive dependencies, for a published wheel compatible with the
+running interpreter. Missing wheels and unresolved checks are reported separately.
 
-Start with the [usage guide](usage.md), then read the [limits of the check](limitations.md) before changing an installation policy.
+**This resolved-set repair is unreleased.** The published 1.0.11 release still
+contains the older name-based checker; see the [limitations](limitations.md).
 
-The checker reads package index metadata. It does not install the projects being analyzed.
+Start with the [usage guide](usage.md). The checker only reads installed metadata
+and package index metadata. It does not resolve versions, install or import the
+projects being analyzed, or build source distributions.

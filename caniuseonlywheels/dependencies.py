@@ -13,14 +13,6 @@
 # limitations under the License.
 
 
-import concurrent.futures
-import logging
-
-import packaging.utils
-import setuptools  # To silence a warning.
-
-import caniuseonlywheels as ciu
-import caniuseonlywheels.distlib.locators
 from caniuseonlywheels import pypi
 
 
@@ -52,66 +44,16 @@ def reasons_to_paths(reasons):
 
 
 def dependencies(project_name):
-    """Get the dependencies for a project."""
-    log = logging.getLogger("ciu")
-    log.info("Locating dependencies for {}".format(project_name))
-    located = caniuseonlywheels.distlib.locators.locate(project_name, prereleases=True)
-    if not located:
-        log.warning("{} not found; false-negatives possible".format(project_name))
-        return None
-    return {
-        packaging.utils.canonicalize_name(pypi.just_name(dep))
-        for dep in located.run_requires
-    }
+    """Unresolved dependency discovery is no longer supported."""
+    from caniuseonlywheels.resolved import InputError
+
+    raise InputError(
+        "Use a resolved environment or pinned lock; dependency discovery does not resolve versions"
+    )
 
 
 def blockers(project_names, index_url=pypi.PYPI_INDEX_URL):
-    log = logging.getLogger("ciu")
-    overrides = pypi.manual_overrides()
+    """Reject the historical name-only traversal, which could miss dependencies."""
+    from caniuseonlywheels.resolved import InputError
 
-    def supports_wheels(project_name):
-        if project_name in overrides:
-            return True
-        else:
-            return pypi.supports_wheels(project_name, index_url=index_url)
-
-    check = []
-    evaluated = set(overrides)
-    for project in project_names:
-        log.info("Checking top-level project: {} ...".format(project))
-        evaluated.add(project)
-        if not supports_wheels(project):
-            check.append(project)
-    reasons = {project: None for project in check}
-    thread_pool_executor = concurrent.futures.ThreadPoolExecutor(
-        max_workers=ciu.CPU_COUNT
-    )
-    with thread_pool_executor as executor:
-        while len(check) > 0:
-            new_check = []
-            for parent, deps in zip(check, executor.map(dependencies, check)):
-                if deps is None:
-                    # Can't find any results for a project, so ignore it so as
-                    # to not accidentally consider indefinitely that a project
-                    # can't port.
-                    del reasons[parent]
-                    continue
-                log.info("Dependencies of {}: {}".format(project, deps))
-                unchecked_deps = []
-                for dep in deps:
-                    if dep in evaluated:
-                        log.info("{} already checked".format(dep))
-                    else:
-                        unchecked_deps.append(dep)
-                deps_status = zip(
-                    unchecked_deps, executor.map(supports_wheels, unchecked_deps)
-                )
-                for dep, ported in deps_status:
-                    if not ported:
-                        reasons[dep] = parent
-                        new_check.append(dep)
-                    # Make sure there's no data race in recording a dependency
-                    # has been evaluated but not reported somewhere.
-                    evaluated.add(dep)
-            check = new_check
-    return reasons_to_paths(reasons)
+    raise InputError("Use resolved.audit() with a resolved environment or pinned lock")

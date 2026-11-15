@@ -13,11 +13,6 @@
 # limitations under the License.
 
 
-import io
-
-import setuptools  # To silence a warning.
-
-import distlib.locators
 from caniuseonlywheels import dependencies, pypi
 from test import mock, unittest
 
@@ -50,51 +45,11 @@ class GraphResolutionTests(unittest.TestCase):
         )
 
 
-class DependenciesTests(unittest.TestCase):
-    @mock.patch("caniuseonlywheels.distlib.locators.locate")
-    def test_normalization(self, locate_mock):
-        class FakeLocated(object):
-            def __init__(self, run_requires):
-                self.run_requires = run_requires
+class RemovedTraversalTests(unittest.TestCase):
+    def test_unresolved_names_cannot_pass(self):
+        from caniuseonlywheels.resolved import InputError
 
-        fake_deps = FakeLocated(["easy_thumbnail", "stuff>=4.0.0"])
-        locate_mock.side_effect = lambda *args, **kargs: fake_deps
-        got = dependencies.dependencies("does not matter")
-        self.assertEqual({"easy-thumbnail", "stuff"}, frozenset(got))
-
-
-# XXX Tests covering dependency loops, e.g. a -> b, b -> a.
-
-
-class NetworkTests(unittest.TestCase):
-
-    # heck if I understand what this is doing
-    # def test_blockers(self):
-    #     got = frozenset(dependencies.blockers(['ralph_scrooge']))
-    #     if not got:
-    #         self.skipTest("reaching distlib failed")
-    #     else:
-    #         want = frozenset([('ralph', 'ralph_scrooge'), ('ralph-assets', 'ralph_scrooge')])
-    #         self.assertEqual(got, want)
-
-    def test_dependencies(self):
-        got = dependencies.dependencies("pastescript")
-        if got is None:
-            self.skipTest("reaching distlib failed")
-        else:
-            self.assertEqual(set(got), frozenset(["six", "pastedeploy", "paste"]))
-
-    def test_dependencies_no_project(self):
-        got = dependencies.dependencies("sdflksjdfsadfsadfad")
-        self.assertIsNone(got)
-
-    def test_blockers_no_project(self):
-        got = dependencies.blockers(["asdfsadfdsfsdffdfadf"])
-        self.assertEqual(got, frozenset())
-
-    def test_manual_overrides(self):
-        self.assertEqual(dependencies.blockers(["unittest2"]), frozenset())
-
-
-if __name__ == "__main__":
-    unittest.main()
+        with self.assertRaises(InputError):
+            dependencies.blockers(["pyftpdlib"])
+        with self.assertRaises(InputError):
+            dependencies.dependencies("pyftpdlib")

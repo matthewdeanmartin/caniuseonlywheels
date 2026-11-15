@@ -21,7 +21,9 @@ from test import mock, unittest
 
 
 def make_command(requires):
-    distribution = dist.Distribution({key: value for key, value in requires.items() if key != "tests_require"})
+    distribution = dist.Distribution(
+        {key: value for key, value in requires.items() if key != "tests_require"}
+    )
     if "tests_require" in requires:
         # Modern setuptools no longer stores this legacy option on Distribution.
         distribution.tests_require = requires["tests_require"]
@@ -47,25 +49,14 @@ class RequiresTests(unittest.TestCase):
         got = frozenset(cmd._dependencies())
         self.assertEqual(got, frozenset(["pip"]))
 
-    @mock.patch(
-        "caniuseonlywheels.dependencies.blockers",
-        lambda projects, index_url: ["blocker"],
-    )
-    def test_nonzero_return_code(self):
-        cmd = make_command({"install_requires": ["pip"]})
-        with self.assertRaises(SystemExit) as context:
-            cmd.run()
-        self.assertNotEqual(context.exception.code, 0)
+    def test_unresolved_setup_requirements_rejected(self):
+        from caniuseonlywheels.resolved import InputError
+
+        with self.assertRaises(InputError):
+            make_command({"install_requires": ["pip"]}).run()
 
 
 class OptionsTests(unittest.TestCase):
     def test_finalize_options(self):
         # Don't expect anything to happen.
         make_command({}).finalize_options()
-
-
-class NetworkTests(unittest.TestCase):
-    @mock.patch("caniuseonlywheels.__main__.check", return_value=True)
-    def test_run(self, check):
-        make_command({"install_requires": ["pip"]}).run()
-        check.assert_called_once_with(["pip"])

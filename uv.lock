@@ -181,7 +181,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "certifi", specifier = ">=2020.6.20" },
-    { name = "packaging", specifier = ">=20" },
+    { name = "packaging", specifier = ">=20.9" },
     { name = "requests", specifier = ">=2.23.0" },
     { name = "setuptools", specifier = ">=60" },
 ]

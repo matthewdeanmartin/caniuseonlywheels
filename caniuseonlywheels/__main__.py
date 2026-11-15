@@ -12,153 +12,105 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function
-
 import argparse
-import io
 import logging
+import platform
 import sys
 
-import packaging.utils
+from caniuseonlywheels import pypi, resolved
 
-from caniuseonlywheels import dependencies
-from caniuseonlywheels import projects as projects_
-from caniuseonlywheels import pypi
-
-# Without this, the 'ciu' logger will emit nothing.
 logging.basicConfig(format="[%(levelname)s] %(message)s")
 
 
 def arguments_from_cli(args):
-    """Parse and verify arguments through the CLI meet minimum requirements."""
-    description = "Determine if a set of project dependencies will work with " "wheels"
-    parser = argparse.ArgumentParser(description=description)
-    req_help = "path(s) to a pip requirements file (e.g. requirements.txt)"
-    parser.add_argument("--requirements", "-r", nargs="+", default=(), help=req_help)
-    meta_help = "path(s) to a PEP 426 metadata file (e.g. PKG-INFO, pydist.json)"
-    parser.add_argument("--metadata", "-m", nargs="+", default=(), help=meta_help)
-    parser.add_argument(
-        "--projects",
-        "-p",
-        nargs="+",
-        default=(),
-        help="name(s) of projects to test for wheel support",
+    parser = argparse.ArgumentParser(
+        description="Check every exact version in a resolved set for wheels compatible with the running interpreter."
     )
+    inputs = parser.add_mutually_exclusive_group(required=True)
+    inputs.add_argument(
+        "--requirements",
+        "-r",
+        nargs="+",
+        help="flat exact-pinned requirements lock/export (no hashes or installer options)",
+    )
+    inputs.add_argument(
+        "--venv", help="running interpreter's virtual environment directory"
+    )
+    # Recognize old flags so migration errors explain why these cannot be checked.
+    inputs.add_argument("--projects", "-p", nargs="+", help=argparse.SUPPRESS)
+    inputs.add_argument("--metadata", "-m", nargs="+", help=argparse.SUPPRESS)
     parser.add_argument(
         "--verbose",
         "-v",
         action="store_true",
-        help="verbose output (e.g. list compatibility overrides)",
+        help="log exact releases as they are checked",
     )
     parser.add_argument(
-        "--exclude", "-e", action="append", default=[], help="Ignore list"
+        "--index",
+        "-i",
+        default=pypi.PYPI_INDEX_URL,
+        help="PyPI-compatible JSON API base URL (not a /simple index)",
     )
-    index_help = "index to to search for packages (e.g. https://pypi.org/pypi)"
-    parser.add_argument("--index", "-i", default=pypi.PYPI_INDEX_URL, help=index_help)
     parsed = parser.parse_args(args)
-    if not (parsed.requirements or parsed.metadata or parsed.projects):
-        parser.error("Missing 'requirements', 'metadata', or 'projects'")
+    if parsed.projects or parsed.metadata:
+        parser.error(
+            "Unresolved project names and root metadata cannot establish a dependency set. Use --venv or --requirements with a fully pinned lock export."
+        )
     if parsed.verbose:
         logging.getLogger("ciu").setLevel(logging.INFO)
-
     return parsed
 
 
-def projects_from_parsed(parsed):
-    """Take parsed arguments from CLI to create a list of specified projects."""
-    projects = []
-    projects.extend(projects_.projects_from_requirements(parsed.requirements))
-    metadata = []
-    for metadata_path in parsed.metadata:
-        with io.open(metadata_path) as file:
-            metadata.append(file.read())
-    projects.extend(projects_.projects_from_metadata(metadata))
-    projects.extend(map(packaging.utils.canonicalize_name, parsed.projects))
-
-    projects = {i for i in projects if i not in parsed.exclude}
-    return projects
-
-
-def message(blockers):
-    """Create a sequence of key messages based on what is blocking."""
-    if not blockers:
-        encoding = getattr(sys.stdout, "encoding", "")
-        if encoding:
-            encoding = encoding.lower()
-        if encoding == "utf-8":
-            # party hat
-            flair = "\U0001F389  "
-        else:
-            flair = ""
-        return [
-            flair + "You (potentially) have 0 projects blocking you from using wheels!"
-        ]
-    flattened_blockers = set()
-    for blocker_reasons in blockers:
-        for blocker in blocker_reasons:
-            flattened_blockers.add(blocker)
-    need = "You need {0} project{1} to transition to wheels."
-    formatted_need = need.format(
-        len(flattened_blockers), "s" if len(flattened_blockers) != 1 else ""
+def print_report(report):
+    print(
+        "Checked {} pinned distributions for {} {} on {} ({}).".format(
+            report.checked,
+            platform.python_implementation(),
+            platform.python_version(),
+            sys.platform,
+            platform.machine(),
+        )
     )
-    can_port = (
-        "Of {0} {1} project{2}, {3} {4} no direct dependencies "
-        "blocking {5} transition:"
-    )
-    formatted_can_port = can_port.format(
-        "those" if len(flattened_blockers) != 1 else "that",
-        len(flattened_blockers),
-        "s" if len(flattened_blockers) != 1 else "",
-        len(blockers),
-        "have" if len(blockers) != 1 else "has",
-        "their" if len(blockers) != 1 else "its",
-    )
-    return formatted_need, formatted_can_port
-
-
-def pprint_blockers(blockers):
-    """Pretty print blockers into a sequence of strings.
-
-    Results will be sorted by top-level project name. This means that if a
-    project is blocking another project then the dependent project will be
-    what is used in the sorting, not the project at the bottom of the
-    dependency graph.
-
-    """
-    pprinted = []
-    for blocker in sorted(blockers, key=lambda x: tuple(reversed(x))):
-        buf = [blocker[0]]
-        if len(blocker) > 1:
-            buf.append(" (which is blocking ")
-            buf.append(", which is blocking ".join(blocker[1:]))
-            buf.append(")")
-        pprinted.append("".join(buf))
-    return pprinted
+    for label, reason in sorted(report.blockers.items()):
+        print("BLOCKED: {}: {}".format(label, reason))
+    for label, reason in sorted(report.unknown.items()):
+        print("UNKNOWN: {}: {}".format(label, reason))
+    if report.passed:
+        print(
+            "All recorded distributions have compatible published wheels; recorded dependency requirements are satisfied."
+        )
+    else:
+        print(
+            "{} wheel blockers; {} unresolved checks. Wheel-only availability is not established.".format(
+                len(report.blockers), len(report.unknown)
+            )
+        )
 
 
 def check(projects, index_url=pypi.PYPI_INDEX_URL):
-    """Check the specified projects for wheel support."""
-    log = logging.getLogger("ciu")
-    log.info("{} top-level projects to check".format(len(projects)))
-    print("Finding and checking dependencies ...")
-    blockers = dependencies.blockers(projects, index_url)
-
-    print("")
-    for line in message(blockers):
-        print(line)
-
-    print("")
-    for line in pprint_blockers(blockers):
-        print(" ", line)
-
-    return len(blockers) == 0
+    """Reject the old unresolved-name API instead of reporting false success."""
+    raise resolved.InputError(
+        "Unresolved project checks were removed; use caniuseonlywheels.check(requirements_paths=[...]) or check(venv=...)"
+    )
 
 
-def main(args=sys.argv[1:]):
+def main(args=None):
     parsed = arguments_from_cli(args)
-    passed = check(projects_from_parsed(parsed), parsed.index)
-    if not passed:
-        sys.exit(3)
+    try:
+        pins = (
+            resolved.from_venv(parsed.venv)
+            if parsed.venv
+            else resolved.from_requirements(parsed.requirements)
+        )
+        report = resolved.audit(pins, parsed.index)
+    except (resolved.InputError, OSError, UnicodeError) as exc:
+        print("UNKNOWN: {}".format(exc), file=sys.stderr)
+        raise SystemExit(2)
+    print_report(report)
+    if report.unknown:
+        raise SystemExit(2)
+    if report.blockers:
+        raise SystemExit(3)
 
 
 if __name__ == "__main__":  # pragma: no cover
