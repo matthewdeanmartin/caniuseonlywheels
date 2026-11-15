@@ -225,7 +225,7 @@ dev = [
     { name = "distlib", marker = "python_full_version >= '3.11'" },
     { name = "flake8", marker = "python_full_version >= '3.11'", specifier = ">1" },
     { name = "isort", marker = "python_full_version >= '3.11'", specifier = ">=5.13" },
-    { name = "keepachangelog-manager-fork", marker = "python_full_version >= '3.11'" },
+    { name = "keepachangelog-manager-fork", marker = "python_full_version >= '3.11'", specifier = "==6.10.1" },
     { name = "mypy", marker = "python_full_version >= '3.11'", specifier = ">=1.8" },
     { name = "pylint", marker = "python_full_version >= '3.11'", specifier = ">=3.0" },
     { name = "pytest", marker = "python_full_version >= '3.11'", specifier = ">=7.4.3" },

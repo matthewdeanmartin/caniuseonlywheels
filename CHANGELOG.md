@@ -9,6 +9,9 @@ The inherited `caniusepython3` changelog is preserved in
 matching Git tag in this checkout.
 
 ## [Unreleased]
+### Changed
+- Prepare releases through GitHub drafts, an automated version-bump PR, and a validated PyPI publish job.
+
 ### Fixed
 - Check every exact version in a resolved environment or flat requirements lock, including transitive dependencies, for a compatible wheel on the running Python.
 - Report missing wheels separately from unknown results instead of treating incomplete metadata as success.

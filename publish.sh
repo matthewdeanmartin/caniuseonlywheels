@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Manual release only. Review the changelog and version preview before running.
+# Legacy manual publish path. The normal draft and release workflow is in
+# CONTRIBUTING.md; review the changelog and version preview before using this.
 uv run --frozen --no-build changelogmanager validate --strict
 uv run --frozen --no-build changelogmanager release --bump-versions --pyproject-only --yes
 uv lock --no-build
